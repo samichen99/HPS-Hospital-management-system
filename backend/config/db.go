@@ -35,3 +35,9 @@ DB = db
 log.Println("Database connection established successfully")
 
 }
+func CloseDb() {
+	if DB != nil {
+		DB.Close()
+		log.Println("Database connection closed")
+	}
+}
