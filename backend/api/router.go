@@ -2,26 +2,29 @@ package api
 
 import (
 	"net/http"
-
 	"github.com/gorilla/mux"
-	"github.com/samichen99/HAP-hospital-management-system/backend/handlers"
+	"github.com/samichen99/HAP-hospital-management-system/handlers"
 )
 
-// NewRouter initializes and returns a new HTTP router
+// NewRouter defining
+
 func NewRouter() *mux.Router {
-	// Create a new router instance
+
+	// Create a new router
+
 	router := mux.NewRouter()
 
-	// Group API under /api path
+	// Group API
+
 	api := router.PathPrefix("/api").Subrouter()
 
-	// user routes
+	// user routing
 
-	api.HandleFunc("/users", handlers.GetAllUsers).Methods("GET")
-	api.HandleFunc("/users/{id}", handlers.GetUserByID).Methods("GET")
-	api.HandleFunc("/users", handlers.CreateUser).Methods("POST")
-	api.HandleFunc("/users/{id}", handlers.UpdateUser).Methods("PUT")
-	api.HandleFunc("/users/{id}", handlers.DeleteUser).Methods("DELETE")
+	api.HandleFunc("/users", handlers.GetAllUsersHandler).Methods("GET")
+	api.HandleFunc("/users/{id}", handlers.GetUserByIDHandler).Methods("GET")
+	api.HandleFunc("/users", handlers.CreateUserHandler).Methods("POST")
+	api.HandleFunc("/users/{id}", handlers.UpdateUserHandler).Methods("PUT")
+	api.HandleFunc("/users/{id}", handlers.DeleteUserHandler).Methods("DELETE")
 
 	// Health check endpoint
 

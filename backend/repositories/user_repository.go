@@ -25,6 +25,22 @@ func CreateUser(user models.User) error {
 	log.Println("User inserted successfully.")
 	return nil
 }
+// UpdateUser func
+
+func UpdateUser(user models.User) error {
+	query := `
+		UPDATE users
+		SET username = $1, email = $2, password = $3, role = $4
+		WHERE id = $5
+	`
+	_, err := config.DB.Exec(query, user.Username, user.Email, user.Password, user.Role, user.ID)
+	if err != nil {
+		log.Println("Error updating user:", err)
+		return err
+	}
+	log.Println("User updated successfully.")
+	return nil
+}
 
 // GetUserByID func
 
