@@ -5,10 +5,9 @@ import (
 	"fmt"
 	"net/http"
 	"strconv"
-
-	"github.com/gorilla/mux"
 	"github.com/samichen99/HAP-hospital-management-system/models"
 	"github.com/samichen99/HAP-hospital-management-system/repositories"
+	"github.com/gorilla/mux"
 )
 
 // CreateUserHandler handler
@@ -54,12 +53,10 @@ func GetUserByIDHandler(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(user)
 }
 
-// UpdateUser handler
-
+// UpdateUserHandler handler
 func UpdateUserHandler(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 	id, err := strconv.Atoi(params["id"])
-
 	if err != nil {
 		http.Error(w, "Invalid ID", http.StatusBadRequest)
 		return

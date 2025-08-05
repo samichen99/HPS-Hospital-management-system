@@ -3,12 +3,11 @@ package repositories
 import (
 	"database/sql"
 	"log"
-
 	"github.com/samichen99/HAP-hospital-management-system/config"
 	"github.com/samichen99/HAP-hospital-management-system/models"
 )
 
-// CreatePatient inserts a new patient into the database
+// CreatePatient repo 
 func CreatePatient(patient models.Patient) error {
 	query := `
 		INSERT INTO patients (user_id, full_name, date_of_birth, gender, phone, address, insurance_number)
@@ -33,7 +32,7 @@ func CreatePatient(patient models.Patient) error {
 	return nil
 }
 
-// GetPatientByID retrieves a patient by ID
+// GetPatientByID repo
 func GetPatientByID(id int) (models.Patient, error) {
 	var patient models.Patient
 
@@ -65,7 +64,7 @@ func GetPatientByID(id int) (models.Patient, error) {
 	return patient, nil
 }
 
-// UpdatePatient modifies an existing patient
+// UpdatePatient repo
 func UpdatePatient(patient models.Patient) error {
 	query := `
 		UPDATE patients
@@ -91,7 +90,7 @@ func UpdatePatient(patient models.Patient) error {
 	return nil
 }
 
-// GetAllPatients returns a list of all patients
+// GetAllPatients repo
 func GetAllPatients() ([]models.Patient, error) {
 	query := `
 		SELECT id, user_id, full_name, date_of_birth, gender, phone, address, insurance_number
@@ -131,7 +130,7 @@ func GetAllPatients() ([]models.Patient, error) {
 	return patients, nil
 }
 
-// DeletePatient removes a patient by ID
+// DeletePatient repo
 func DeletePatient(id int) error {
 	query := `DELETE FROM patients WHERE id = $1`
 	_, err := config.DB.Exec(query, id)
