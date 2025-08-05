@@ -9,7 +9,7 @@ import (
 	"github.com/samichen99/HAP-hospital-management-system/repositories"
 )
 
-// CreatePatientHandler handles the creation of a patient
+// CreatePatient handler
 func CreatePatientHandler(w http.ResponseWriter, r *http.Request) {
 	var patient models.Patient
 
@@ -29,7 +29,7 @@ func CreatePatientHandler(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte("Patient created successfully"))
 }
 
-// GetPatientByIDHandler retrieves a patient by ID
+// GetPatientByID handler
 func GetPatientByIDHandler(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 	id, err := strconv.Atoi(params["id"])
@@ -49,7 +49,7 @@ func GetPatientByIDHandler(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(patient)
 }
 
-// UpdatePatientHandler updates an existing patient
+// UpdatePatient handler
 func UpdatePatientHandler(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 	id, err := strconv.Atoi(params["id"])
@@ -77,7 +77,7 @@ func UpdatePatientHandler(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte("Patient updated successfully"))
 }
 
-// GetAllPatientsHandler retrieves all patients
+// GetAllPatients handler
 func GetAllPatientsHandler(w http.ResponseWriter, r *http.Request) {
 	patients, err := repositories.GetAllPatients()
 	if err != nil {
@@ -89,7 +89,7 @@ func GetAllPatientsHandler(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(patients)
 }
 
-// DeletePatientHandler deletes a patient by ID
+// DeletePatient handler
 func DeletePatientHandler(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 	id, err := strconv.Atoi(params["id"])
