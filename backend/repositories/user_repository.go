@@ -1,13 +1,14 @@
 package repositories
 
 import (
-	"github.com/samichen99/HAP-hospital-management-system/backend/models"
-	"github.com/samichen99/HAP-hospital-management-system/config"
 	"database/sql"
 	"log"
+
+	"github.com/samichen99/HAP-hospital-management-system/config"
+	"github.com/samichen99/HAP-hospital-management-system/models"
 )
 
-// CreateUser func 
+// CreateUser func
 
 func CreateUser(user models.User) error {
 	query := `
@@ -25,7 +26,7 @@ func CreateUser(user models.User) error {
 	return nil
 }
 
-// GetUserByID func 
+// GetUserByID func
 
 func GetUserByID(id int) (models.User, error) {
 	var user models.User
