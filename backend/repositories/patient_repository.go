@@ -3,11 +3,12 @@ package repositories
 import (
 	"database/sql"
 	"log"
+
 	"github.com/samichen99/HAP-hospital-management-system/config"
 	"github.com/samichen99/HAP-hospital-management-system/models"
 )
 
-// CreatePatient repo 
+// CreatePatient repo
 func CreatePatient(patient models.Patient) error {
 	query := `
 		INSERT INTO patients (user_id, full_name, date_of_birth, gender, phone, address, insurance_number)
