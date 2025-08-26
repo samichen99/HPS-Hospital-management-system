@@ -8,7 +8,8 @@ import (
 	"github.com/samichen99/HAP-hospital-management-system/models"
 )
 
-// CreateDoctor repo
+// CreateDoctor repo :
+
 func CreateDoctor(doctor models.Doctor) error {
 	query := `
 		INSERT INTO doctors (user_id, full_name, speciality, phone, bio, status)
@@ -23,7 +24,8 @@ func CreateDoctor(doctor models.Doctor) error {
 	return nil
 }
 
-// GetDoctorByID repo
+// GetDoctorByID repo :
+
 func GetDoctorByID(id int) (models.Doctor, error) {
 	var doctor models.Doctor
 
@@ -55,7 +57,8 @@ func GetDoctorByID(id int) (models.Doctor, error) {
 	return doctor, nil
 }
 
-// UpdateDoctor repo
+// UpdateDoctor repo :
+
 func UpdateDoctor(doctor models.Doctor) error {
 	query := `
 		UPDATE doctors
@@ -73,7 +76,8 @@ func UpdateDoctor(doctor models.Doctor) error {
 	return nil
 }
 
-// GetAllDoctors repo
+// GetAllDoctors repo :
+
 func GetAllDoctors() ([]models.Doctor, error) {
 	query := `
 		SELECT id, user_id, full_name, speciality, phone, bio, status
@@ -110,7 +114,8 @@ func GetAllDoctors() ([]models.Doctor, error) {
 	return doctors, nil
 }
 
-// DeleteDoctor repo
+// DeleteDoctor repo :
+
 func DeleteDoctor(id int) error {
 	query := `DELETE FROM doctors WHERE id = $1`
 

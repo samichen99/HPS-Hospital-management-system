@@ -10,7 +10,7 @@ import (
 	"github.com/gorilla/mux"
 )
 
-// CreateUserHandler handler
+// CreateUser handler :
 
 func CreateUserHandler(w http.ResponseWriter, r *http.Request) {
 	var user models.User
@@ -32,7 +32,7 @@ func CreateUserHandler(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintln(w, "User created successfully")
 }
 
-// GetUserByIDHandler handler
+// GetUserByID handler :
 
 func GetUserByIDHandler(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
@@ -53,7 +53,8 @@ func GetUserByIDHandler(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(user)
 }
 
-// UpdateUserHandler handler
+// UpdateUser handler :
+
 func UpdateUserHandler(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 	id, err := strconv.Atoi(params["id"])
@@ -69,7 +70,7 @@ func UpdateUserHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	user.ID = id // Set the id for the update
+	user.ID = id 
 
 	err = repositories.UpdateUser(user)
 	if err != nil {
@@ -81,7 +82,7 @@ func UpdateUserHandler(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintln(w, "User updated successfully")
 }
 
-// GetAllUsersHandler handler
+// GetAllUsers handler :
 
 func GetAllUsersHandler(w http.ResponseWriter, r *http.Request) {
 	users, err := repositories.GetAllUsers()
@@ -94,7 +95,7 @@ func GetAllUsersHandler(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(users)
 }
 
-// DeleteUserHandler handler
+// DeleteUser handler :
 
 func DeleteUserHandler(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)

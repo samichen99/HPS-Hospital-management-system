@@ -8,7 +8,7 @@ import (
 	"github.com/samichen99/HAP-hospital-management-system/models"
 )
 
-// CreateUser func
+// CreateUser func :
 
 func CreateUser(user models.User) error {
 	query := `
@@ -25,7 +25,7 @@ func CreateUser(user models.User) error {
 	log.Println("User inserted successfully.")
 	return nil
 }
-// UpdateUser func
+// UpdateUser func:
 
 func UpdateUser(user models.User) error {
 	query := `
@@ -42,7 +42,7 @@ func UpdateUser(user models.User) error {
 	return nil
 }
 
-// GetUserByID func
+// GetUserByID func :
 
 func GetUserByID(id int) (models.User, error) {
 	var user models.User
@@ -74,7 +74,7 @@ func GetUserByID(id int) (models.User, error) {
 	return user, nil
 }
 
-// GetAllUsers func
+// GetAllUsers func :
 
 func GetAllUsers() ([]models.User, error) {
 	query := `
@@ -113,7 +113,7 @@ func GetAllUsers() ([]models.User, error) {
 	return users, nil
 }
 
-// DeleteUser deletes a user by ID
+// DeleteUser func :
 func DeleteUser(id int) error {
 	query := `DELETE FROM users WHERE id = $1`
 
