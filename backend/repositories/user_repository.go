@@ -8,8 +8,7 @@ import (
 	"github.com/samichen99/HAP-hospital-management-system/models"
 )
 
-// CreateUser func :
-
+// CreateUser func
 func CreateUser(user models.User) error {
 	query := `
 		INSERT INTO users (username, email, password, role)
@@ -25,8 +24,8 @@ func CreateUser(user models.User) error {
 	log.Println("User inserted successfully.")
 	return nil
 }
-// UpdateUser func:
 
+// UpdateUser func
 func UpdateUser(user models.User) error {
 	query := `
 		UPDATE users
@@ -42,8 +41,7 @@ func UpdateUser(user models.User) error {
 	return nil
 }
 
-// GetUserByID func :
-
+// GetUserByID func
 func GetUserByID(id int) (models.User, error) {
 	var user models.User
 
@@ -74,8 +72,7 @@ func GetUserByID(id int) (models.User, error) {
 	return user, nil
 }
 
-// GetAllUsers func :
-
+// GetAllUsers func
 func GetAllUsers() ([]models.User, error) {
 	query := `
 		SELECT id, username, email, password, role, creation_date
@@ -113,7 +110,7 @@ func GetAllUsers() ([]models.User, error) {
 	return users, nil
 }
 
-// DeleteUser func :
+// DeleteUser deletes a user by ID
 func DeleteUser(id int) error {
 	query := `DELETE FROM users WHERE id = $1`
 
@@ -125,4 +122,29 @@ func DeleteUser(id int) error {
 
 	log.Println("User deleted successfully.")
 	return nil
+}
+
+// GetUserByEmail returns a user by email, or sql.ErrNoRows if not found
+func GetUserByEmail(email string) (models.User, error) {
+	var user models.User
+	query := `
+        SELECT id, username, email, password, role, creation_date
+        FROM users
+        WHERE email = $1
+    `
+	err := config.DB.QueryRow(query, email).Scan(
+		&user.ID,
+		&user.Username,
+		&user.Email,
+		&user.Password,
+		&user.Role,
+		&user.CreationDate,
+	)
+	if err != nil {
+		if err != sql.ErrNoRows {
+			log.Println("Error retrieving user by email:", err)
+		}
+		return user, err
+	}
+	return user, nil
 }
