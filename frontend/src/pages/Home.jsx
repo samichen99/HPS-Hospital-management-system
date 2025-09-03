@@ -50,13 +50,7 @@ const fetchUsers = async () => {
     const res = await axios.get("/api/users");
     console.log("Users API response:", res.data);
 
-    if (Array.isArray(res.data)) {
-      setUsers(res.data);
-    } else if (Array.isArray(res.data.users)) {
-      setUsers(res.data.users);
-    } else {
-      setUsers([]); 
-    }
+    if (Array.isArray(res.data)) setUsers(res.data); else if (Array.isArray(res.data.users)) setUsers(res.data.users); else setUsers([]);
   } catch {
     setError("Failed to fetch users");
   }

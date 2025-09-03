@@ -20,7 +20,7 @@ func AuthMiddleware(next http.Handler) http.Handler {
 			http.Error(w, "invalid token", http.StatusUnauthorized)
 			return
 		}
-		
+
 		_ = claims
 		next.ServeHTTP(w, r)
 	})

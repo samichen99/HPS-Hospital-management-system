@@ -6,6 +6,5 @@ type Doctor struct {
 	FullName   string `json:"full_name"`
 	Speciality string `json:"speciality"`
 	Phone      string `json:"phone"`
-	Bio        string `json:"bio"`
 	Status     bool   `json:"status"`
 }

@@ -121,6 +121,7 @@ func GetAppointmentsByPatientIDHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 // GetAppointmentsByDoctorIDHandler :
+
 func GetAppointmentsByDoctorIDHandler(w http.ResponseWriter, r *http.Request) {
 	idParam := mux.Vars(r)["doctor_id"]
 	doctorID, err := strconv.Atoi(idParam)
@@ -193,7 +194,7 @@ func UpdateAppointmentStatusHandler(w http.ResponseWriter, r *http.Request) {
 		"cancelled": true,
 		"no-show":   true,
 	}
-	
+
 	if !validStatuses[statusUpdate.Status] {
 		http.Error(w, "Invalid status. Valid statuses are: scheduled, completed, cancelled, no-show", http.StatusBadRequest)
 		return

@@ -10,38 +10,16 @@ import (
 	"github.com/samichen99/HAP-hospital-management-system/repositories"
 )
 
-// CreateDoctorHandler :
-
+// CreateDoctorHandler handles the creation of a new doctor
 func CreateDoctorHandler(w http.ResponseWriter, r *http.Request) {
 	var doctor models.Doctor
-
 	if err := json.NewDecoder(r.Body).Decode(&doctor); err != nil {
-		http.Error(w, "Invalid request body", http.StatusBadRequest)
+		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
 	if err := repositories.CreateDoctor(doctor); err != nil {
-		http.Error(w, "Failed to create doctor", http.StatusInternalServerError)
-		return
-	}
-
-	w.WriteHeader(http.StatusCreated)
-	w.Write([]byte("Doctor created successfully"))
-}
-
-// GetDoctorByIDHandler :
-
-func GetDoctorByIDHandler(w http.ResponseWriter, r *http.Request) {
-	idParam := mux.Vars(r)["id"]
-	id, err := strconv.Atoi(idParam)
-	if err != nil {
-		http.Error(w, "Invalid doctor ID", http.StatusBadRequest)
-		return
-	}
-
-	doctor, err := repositories.GetDoctorByID(id)
-	if err != nil {
-		http.Error(w, "Doctor not found", http.StatusInternalServerError)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
@@ -49,39 +27,34 @@ func GetDoctorByIDHandler(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(doctor)
 }
 
-// UpdateDoctorHandler :
-
-func UpdateDoctorHandler(w http.ResponseWriter, r *http.Request) {
-	idParam := mux.Vars(r)["id"]
-	id, err := strconv.Atoi(idParam)
+// GetDoctorByIDHandler handles retrieving a doctor by ID
+func GetDoctorByIDHandler(w http.ResponseWriter, r *http.Request) {
+	params := mux.Vars(r)
+	id, err := strconv.Atoi(params["id"])
 	if err != nil {
 		http.Error(w, "Invalid doctor ID", http.StatusBadRequest)
 		return
 	}
 
-	var doctor models.Doctor
-	if err := json.NewDecoder(r.Body).Decode(&doctor); err != nil {
-		http.Error(w, "Invalid request body", http.StatusBadRequest)
+	doctor, err := repositories.GetDoctorByID(id)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	if doctor.ID == 0 {
+		http.Error(w, "Doctor not found", http.StatusNotFound)
 		return
 	}
 
-	doctor.ID = id
-
-	if err := repositories.UpdateDoctor(doctor); err != nil {
-		http.Error(w, "Failed to update doctor", http.StatusInternalServerError)
-		return
-	}
-
-	w.WriteHeader(http.StatusOK)
-	w.Write([]byte("Doctor updated successfully"))
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(doctor)
 }
 
-// GetAllDoctorsHandler :
-
+// GetAllDoctorsHandler handles retrieving all doctors
 func GetAllDoctorsHandler(w http.ResponseWriter, r *http.Request) {
 	doctors, err := repositories.GetAllDoctors()
 	if err != nil {
-		http.Error(w, "Failed to retrieve doctors", http.StatusInternalServerError)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
@@ -89,21 +62,45 @@ func GetAllDoctorsHandler(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(doctors)
 }
 
-// DeleteDoctorHandler :
+// UpdateDoctorHandler handles updating an existing doctor
+func UpdateDoctorHandler(w http.ResponseWriter, r *http.Request) {
+	params := mux.Vars(r)
+	id, err := strconv.Atoi(params["id"])
+	if err != nil {
+		http.Error(w, "Invalid doctor ID", http.StatusBadRequest)
+		return
+	}
 
+	var doctor models.Doctor
+	if err := json.NewDecoder(r.Body).Decode(&doctor); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	doctor.ID = id
+
+	if err := repositories.UpdateDoctor(doctor); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(doctor)
+}
+
+// DeleteDoctorHandler handles deleting a doctor by ID
 func DeleteDoctorHandler(w http.ResponseWriter, r *http.Request) {
-	idParam := mux.Vars(r)["id"]
-	id, err := strconv.Atoi(idParam)
+	params := mux.Vars(r)
+	id, err := strconv.Atoi(params["id"])
 	if err != nil {
 		http.Error(w, "Invalid doctor ID", http.StatusBadRequest)
 		return
 	}
 
 	if err := repositories.DeleteDoctor(id); err != nil {
-		http.Error(w, "Failed to delete doctor", http.StatusInternalServerError)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
-	w.WriteHeader(http.StatusOK)
-	w.Write([]byte("Doctor deleted successfully"))
+	w.WriteHeader(http.StatusNoContent)
 }
