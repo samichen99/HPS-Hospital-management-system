@@ -74,6 +74,30 @@ func NewRouter() *mux.Router {
 	// file filtering routes
 	api.HandleFunc("/files/patient/{patient_id}", handlers.GetFilesByPatientIDHandler).Methods("GET")
 
+	// invoice routes
+	api.HandleFunc("/invoices", handlers.GetAllInvoicesHandler).Methods("GET")
+	api.HandleFunc("/invoices/{id}", handlers.GetInvoiceByIDHandler).Methods("GET")
+	api.HandleFunc("/invoices", handlers.CreateInvoiceHandler).Methods("POST")
+	api.HandleFunc("/invoices/{id}", handlers.UpdateInvoiceHandler).Methods("PUT")
+	api.HandleFunc("/invoices/{id}", handlers.DeleteInvoiceHandler).Methods("DELETE")
+	
+	// invoice filtering routes
+	api.HandleFunc("/invoices/patient/{patient_id}", handlers.GetInvoicesByPatientHandler).Methods("GET")
+	api.HandleFunc("/invoices/status/{status}", handlers.GetInvoicesByStatusHandler).Methods("GET")
+
+	// mark invoice as paid
+	api.HandleFunc("/invoices/{id}/paid", handlers.MarkInvoicePaidHandler).Methods("PATCH")
+
+	// Payment routes
+	api.HandleFunc("/payments", handlers.GetAllPaymentsHandler).Methods("GET")
+	api.HandleFunc("/payments/{id}", handlers.GetPaymentByIDHandler).Methods("GET")
+	api.HandleFunc("/payments", handlers.CreatePaymentHandler).Methods("POST")
+	api.HandleFunc("/payments/{id}", handlers.DeletePaymentHandler).Methods("DELETE")
+
+	// Payment filtering
+	api.HandleFunc("/payments/invoice/{invoice_id}", handlers.GetPaymentsByInvoiceIDHandler).Methods("GET")
+
+	
 	// Health check endpoint
 	router.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte("API is up and running"))
