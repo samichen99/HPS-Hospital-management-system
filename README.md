@@ -29,24 +29,6 @@ An enterprise-grade, full-stack Hospital Management System built with **React.js
 
 ---
 
-##  Project Structure
-
-hospital-management-system/
-├── frontend/ # React.js client
-│ └── src/
-│ ├── components/
-│ ├── pages/
-│ ├── services/
-│ └── ...
-├── backend/ # Go backend API
-│ ├── controllers/
-│ ├── models/
-│ ├── routes/
-│ └── ...
-├── docs/ # Architecture, API docs
-├── docker-compose.yml # Multi-service setup
-├── .env.example # Environment template
-└── README.md
 
 ## Author
 
