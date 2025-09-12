@@ -3,6 +3,7 @@ package repositories
 import (
 	"database/sql"
 	"log"
+	"time"
 
 	"github.com/samichen99/HAP-hospital-management-system/config"
 	"github.com/samichen99/HAP-hospital-management-system/models"
@@ -17,7 +18,7 @@ func CreatePayment(payment models.Payment) error {
 	_, err := config.DB.Exec(query,
 		payment.InvoiceId,
 		payment.Amount,
-		payment.Payment_method,
+		payment.PaymentMethod,
 		payment.Notes,
 	)
 	if err != nil {
@@ -25,7 +26,36 @@ func CreatePayment(payment models.Payment) error {
 		return err
 	}
 	log.Println("Payment created successfully.")
+
+	if err = UpdateInvoiceStatusAfterPayment(payment.InvoiceId); err != nil {
+		log.Println("Error updating invoice after payment:", err)
+		return err
+	}
 	return nil
+}
+
+// update invoice status based on payments
+
+func UpdateInvoiceStatusAfterPayment(invoiceID int) error {
+	invoiceAmount, paymentSum, err := GetInvoiceTotalAndPayments(invoiceID)
+	if err != nil {
+		return err
+	}
+	var status string
+	var paidAt *time.Time
+	switch {
+	case paymentSum >= invoiceAmount:
+		status = "paid"
+		now := time.Now()
+		paidAt = &now
+	case paymentSum > 0 && paymentSum < invoiceAmount:
+		status = "partiallypaid"
+		paidAt = nil
+	default:
+		status = "unpaid"
+		paidAt = nil
+	}
+	return UpdateInvoiceStatusAndPaidAt(invoiceID, status, paidAt)
 }
 
 // GetPaymentByID fetches a payment by ID
@@ -39,8 +69,8 @@ func GetPaymentByID(id int) (models.Payment, error) {
 		&payment.ID,
 		&payment.InvoiceId,
 		&payment.Amount,
-		&payment.Payment_Date,
-		&payment.Payment_method,
+		&payment.PaymentDate,
+		&payment.PaymentMethod,
 		&payment.Notes,
 	)
 	if err != nil {
@@ -74,8 +104,8 @@ func GetAllPayments() ([]models.Payment, error) {
 			&payment.ID,
 			&payment.InvoiceId,
 			&payment.Amount,
-			&payment.Payment_Date,
-			&payment.Payment_method,
+			&payment.PaymentDate,
+			&payment.PaymentMethod,
 			&payment.Notes,
 		)
 		if err != nil {
@@ -107,8 +137,8 @@ func GetPaymentsByInvoiceID(invoiceID int) ([]models.Payment, error) {
 			&payment.ID,
 			&payment.InvoiceId,
 			&payment.Amount,
-			&payment.Payment_Date,
-			&payment.Payment_method,
+			&payment.PaymentDate,
+			&payment.PaymentMethod,
 			&payment.Notes,
 		)
 		if err != nil {

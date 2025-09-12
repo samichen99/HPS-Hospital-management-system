@@ -9,6 +9,21 @@ import (
 	"github.com/samichen99/HAP-hospital-management-system/models"
 )
 
+// UpdateInvoiceStatusAndPaidAt updates the status and paid_at fields of an invoice
+func UpdateInvoiceStatusAndPaidAt(invoiceID int, status string, paidAt *time.Time) error {
+	var err error
+	if paidAt != nil {
+		_, err = config.DB.Exec(`UPDATE invoices SET status = $1, paid_at = $2 WHERE id = $3`, status, *paidAt, invoiceID)
+	} else {
+		_, err = config.DB.Exec(`UPDATE invoices SET status = $1, paid_at = NULL WHERE id = $2`, status, invoiceID)
+	}
+	if err != nil {
+		log.Println("Error updating invoice status/paid_at:", err)
+		return err
+	}
+	return nil
+}
+
 // CreateInvoice inserts a new invoice
 func CreateInvoice(inv models.Invoice) (int, error) {
 	query := `
@@ -153,6 +168,36 @@ func UpdateInvoice(inv models.Invoice) error {
 		return err
 	}
 	return nil
+}
+
+// UpdateInvoiceStatus updates the status and paid_at fields
+func updateInvoiceStatus(id int, status string, paidAt *time.Time) error {
+	query := `
+		update invoices set status = $1, paid_at = $2 where id = $3`
+	_, err := config.DB.Exec(query, status, paidAt, id)
+	if err != nil {
+		log.Println("Error updating invoice status:", err)
+		return err
+	}
+	return nil
+}
+
+// GetInvoiceTotalAndPayments returns invoice amount and current sum of payments
+func GetInvoiceTotalAndPayments(invoiceID int) (float64, float64, error) {
+	var invoiceAmount float64
+	var paymentSum float64
+
+	err := config.DB.QueryRow(`SELECT amount FROM invoices WHERE id = $1`, invoiceID).Scan(&invoiceAmount)
+	if err != nil {
+		return 0, 0, err
+	}
+
+	err = config.DB.QueryRow(`SELECT COALESCE(SUM(amount), 0) FROM payments WHERE invoice_id = $1`, invoiceID).Scan(&paymentSum)
+	if err != nil {
+		return 0, 0, err
+	}
+
+	return invoiceAmount, paymentSum, nil
 }
 
 // DeleteInvoice removes an invoice
