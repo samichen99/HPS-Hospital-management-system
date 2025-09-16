@@ -150,6 +150,38 @@ func GetPaymentsByInvoiceID(invoiceID int) ([]models.Payment, error) {
 	return payments, nil
 }
 
+	// UpdatePayment updates an existing payment by ID
+func UpdatePayment(payment models.Payment) error {
+	query := `
+		UPDATE payments
+		SET amount = $1,
+		    payment_method = $2,
+		    notes = $3,
+		    payment_date = $4
+		WHERE id = $5
+	`
+	_, err := config.DB.Exec(query,
+		payment.Amount,
+		payment.PaymentMethod,
+		payment.Notes,
+		payment.PaymentDate,
+		payment.ID,
+	)
+	if err != nil {
+		log.Println("Error updating payment:", err)
+		return err
+	}
+
+	// Recalculate invoice status after updating payment
+	if err = UpdateInvoiceStatusAfterPayment(payment.InvoiceId); err != nil {
+		log.Println("Error updating invoice after payment update:", err)
+		return err
+	}
+
+	log.Println("Payment updated successfully.")
+	return nil
+}
+
 // DeletePayment deletes a payment by ID
 func DeletePayment(id int) error {
 	query := `DELETE FROM payments WHERE id = $1`

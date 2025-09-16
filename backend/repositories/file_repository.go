@@ -132,3 +132,34 @@ func DeleteFile(id int) error {
 	log.Println("File deleted successfully.")
 	return nil
 }
+
+// UpdateFile updates an existing file
+func UpdateFile(file models.File) error {
+	query := `
+		UPDATE files
+		SET patient_id = $1,
+		    doctor_id = $2,
+		    file_name = $3,
+		    file_type = $4,
+		    file_url = $5,
+		    upload_date = $6,
+		    description = $7
+		WHERE id = $8
+	`
+	_, err := config.DB.Exec(query,
+		file.PatientID,
+		file.DoctorID,
+		file.FileName,
+		file.FileType,
+		file.FileURL,
+		file.UploadDate,
+		file.Description,
+		file.ID,
+	)
+	if err != nil {
+		log.Println("Error updating file:", err)
+		return err
+	}
+	log.Println("File updated successfully.")
+	return nil
+}

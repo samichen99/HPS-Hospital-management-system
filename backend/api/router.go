@@ -70,6 +70,7 @@ func NewRouter() *mux.Router {
 	api.HandleFunc("/files/{id}", handlers.GetFileByIDHandler).Methods("GET")
 	api.HandleFunc("/files", handlers.CreateFileHandler).Methods("POST")
 	api.HandleFunc("/files/{id}", handlers.DeleteFileHandler).Methods("DELETE")
+	api.HandleFunc("/files/{id}", handlers.UpdateFileHandler).Methods("PUT")
 
 	// file filtering routes
 	api.HandleFunc("/files/patient/{patient_id}", handlers.GetFilesByPatientIDHandler).Methods("GET")
@@ -93,6 +94,7 @@ func NewRouter() *mux.Router {
 	api.HandleFunc("/payments/{id}", handlers.GetPaymentByIDHandler).Methods("GET")
 	api.HandleFunc("/payments", handlers.CreatePaymentHandler).Methods("POST")
 	api.HandleFunc("/payments/{id}", handlers.DeletePaymentHandler).Methods("DELETE")
+	api.HandleFunc("/payments/{id}", handlers.UpdatePaymentHandler).Methods("PUT")
 
 	// Payment filtering
 	api.HandleFunc("/payments/invoice/{invoice_id}", handlers.GetPaymentsByInvoiceIDHandler).Methods("GET")

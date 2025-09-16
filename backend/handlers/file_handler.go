@@ -84,3 +84,30 @@ func DeleteFileHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	json.NewEncoder(w).Encode(map[string]string{"message": "File deleted successfully"})
 }
+
+// UpdateFileHandler handles updating an existing file
+func UpdateFileHandler(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	idStr := vars["id"]
+	id, err := strconv.Atoi(idStr)
+	if err != nil {
+		http.Error(w, "Invalid file ID", http.StatusBadRequest)
+		return
+	}
+
+	var file models.File
+	if err := json.NewDecoder(r.Body).Decode(&file); err != nil {
+		http.Error(w, "Invalid request body", http.StatusBadRequest)
+		return
+	}
+
+	file.ID = id // ensure we’re updating the correct file
+
+	if err := repositories.UpdateFile(file); err != nil {
+		http.Error(w, "Failed to update file", http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(map[string]string{"message": "File updated successfully"})
+}

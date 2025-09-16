@@ -81,3 +81,30 @@ func DeletePaymentHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	json.NewEncoder(w).Encode(map[string]string{"message": "Payment deleted successfully"})
 }
+
+// UpdatePaymentHandler handles updating an existing payment
+func UpdatePaymentHandler(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	idStr := vars["id"]
+	id, err := strconv.Atoi(idStr)
+	if err != nil {
+		http.Error(w, "Invalid payment ID", http.StatusBadRequest)
+		return
+	}
+
+	var payment models.Payment
+	if err := json.NewDecoder(r.Body).Decode(&payment); err != nil {
+		http.Error(w, "Invalid request body", http.StatusBadRequest)
+		return
+	}
+
+	payment.ID = id 
+
+	if err := repositories.UpdatePayment(payment); err != nil {
+		http.Error(w, "Failed to update payment", http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(map[string]string{"message": "Payment updated successfully"})
+}
