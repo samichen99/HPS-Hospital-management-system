@@ -1,11 +1,16 @@
 package middleware
 
 import (
+	"context"
 	"net/http"
 	"strings"
 
 	"github.com/samichen99/HAP-hospital-management-system/utils"
 )
+
+type contextKey string
+
+const UserClaimsKey contextKey = "userClaims"
 
 func AuthMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -21,7 +26,8 @@ func AuthMiddleware(next http.Handler) http.Handler {
 			return
 		}
 
-		_ = claims
-		next.ServeHTTP(w, r)
+		// Store claims in context
+		ctx := context.WithValue(r.Context(), UserClaimsKey, claims)
+		next.ServeHTTP(w, r.WithContext(ctx))
 	})
 }

@@ -18,6 +18,18 @@ func NewRouter() *mux.Router {
 	api := router.PathPrefix("/api").Subrouter()
 	api.Use(middleware.AuthMiddleware)
 
+	 //  Only Admin can manage users
+	admin := api.PathPrefix("/admin").Subrouter()
+	admin.Use(middleware.RequireRole("admin"))
+	admin.HandleFunc("/users", handlers.GetAllUsersHandler).Methods("GET")
+	admin.HandleFunc("/users/{id}", handlers.DeleteUserHandler).Methods("DELETE")
+
+	//  Only Doctor can create medical records
+	doctor := api.PathPrefix("/doctor").Subrouter()
+	doctor.Use(middleware.RequireRole("doctor"))
+	doctor.HandleFunc("/records", handlers.CreateMedicalRecordHandler).Methods("POST")
+
+
 	// user routes
 	api.HandleFunc("/users", handlers.GetAllUsersHandler).Methods("GET")
 	api.HandleFunc("/users/{id}", handlers.GetUserByIDHandler).Methods("GET")

@@ -88,7 +88,11 @@ func GetAllMedicalRecords() ([]models.MedicalRecord, error) {
 func UpdateMedicalRecord(record models.MedicalRecord) error {
 	query := `
         UPDATE medical_records 
-        SET patient_id=$1, doctor_id=$2, diagnosis=$3, prescription=$4, creation_date=$5 
+        SET patient_id=$1,
+		 doctor_id=$2, 
+		 diagnosis=$3, 
+		 prescription=$4, 
+		 creation_date=$5 
         WHERE id=$6`
 	_, err := config.DB.Exec(query, record.PatientID, record.DoctorID, record.Diagnosis, record.Prescription, record.CreationDate, record.ID)
 	return err
