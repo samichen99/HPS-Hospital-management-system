@@ -180,3 +180,23 @@ func MarkInvoicePaidHandler(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 	_, _ = w.Write([]byte("Invoice marked as paid"))
 }
+
+// filter invoices by date range
+
+func FilterInvoiceHandler(w http.ResponseWriter, r *http.Request) {
+	from := r.URL.Query().Get("from")
+	to := r.URL.Query().Get("to")
+	if from == "" || to == "" {
+		http.Error(w, "from and to query parameters are required", http.StatusBadRequest)
+		return
+	}
+
+	invoices, err := repositories.FilterInvoicesByDateRange(from, to)
+	if err != nil {
+		http.Error(w, "Failed to fetch invoices: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(invoices)
+}

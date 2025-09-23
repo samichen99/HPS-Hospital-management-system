@@ -171,7 +171,7 @@ func UpdateInvoice(inv models.Invoice) error {
 }
 
 // UpdateInvoiceStatus updates the status and paid_at fields
-func updateInvoiceStatus(id int, status string, paidAt *time.Time) error {
+func UpdateInvoiceStatus(id int, status string, paidAt *time.Time) error {
 	query := `
 		update invoices set status = $1, paid_at = $2 where id = $3`
 	_, err := config.DB.Exec(query, status, paidAt, id)
@@ -301,3 +301,31 @@ func valueOrTime(p *time.Time) time.Time {
 	}
 	return *p
 }
+
+func FilterInvoicesByDateRange(fromDate, toDate string) ([]models.Invoice, error) {
+	query := `
+		SELECT id, patient_id, appointment_id, amount, status,
+		       due_date, issued_at, paid_at, notes
+		FROM invoices
+		WHERE issued_at BETWEEN $1 AND $2
+		ORDER BY issued_at DESC
+	`
+	rows, err := config.DB.Query(query, fromDate, toDate)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var invoices []models.Invoice
+	for rows.Next() {
+		var invoice models.Invoice
+		if err := rows.Scan(&invoice.ID, &invoice.PatientID, &invoice.AppointmentID,
+			&invoice.Amount, &invoice.Status, &invoice.DueDate, &invoice.IssuedAt,
+			&invoice.PaidAt, &invoice.Notes); err != nil {
+			return nil, err
+		}
+		invoices = append(invoices, invoice)
+	}
+	return invoices, nil
+}
+

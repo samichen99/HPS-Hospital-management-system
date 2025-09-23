@@ -121,3 +121,40 @@ func DeleteDoctor(id int) error {
 	log.Println("Doctor deleted successfully.")
 	return nil
 }
+
+
+// search doctors by name or speciality
+
+func SearchDoctors(queryStr string) ([]models.Doctor, error) {
+	query := `
+		SELECT id, user_id, full_name, speciality, phone, status
+		FROM doctors
+		WHERE full_name ILIKE '%' || $1 || '%' OR speciality ILIKE '%' || $1 || '%'
+	`
+	rows, err := config.DB.Query(query, queryStr)
+	if err != nil {
+		log.Println("Error searching doctors:", err)
+		return nil, err
+	}
+
+	defer rows.Close()
+
+	var doctors []models.Doctor
+	for rows.Next() {
+		var doctor models.Doctor
+		err := rows.Scan(
+			&doctor.ID,
+			&doctor.UserID,
+			&doctor.FullName,
+			&doctor.Speciality,
+			&doctor.Phone,
+			&doctor.Status,
+		)
+		if err != nil {
+			log.Println("Error scanning doctor:", err)
+			continue
+		}
+		doctors = append(doctors, doctor)
+	}
+	return doctors, nil
+}

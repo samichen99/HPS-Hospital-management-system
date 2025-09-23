@@ -104,4 +104,20 @@ func DeleteDoctorHandler(w http.ResponseWriter, r *http.Request) {
 
 	w.WriteHeader(http.StatusNoContent)
 }
-// test
+
+// SearchDoctorsHandler handles search
+
+func SearchDoctorsHandler(w http.ResponseWriter, r *http.Request) {
+	queryParams := r.URL.Query()
+
+	name := queryParams.Get("name")
+
+	doctors, err := repositories.SearchDoctors(name)
+
+	if err != nil {
+		http.Error(w, "Failed to search doctors: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(doctors)
+}

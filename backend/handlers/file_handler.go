@@ -1,9 +1,14 @@
 package handlers
 
 import (
+	
 	"encoding/json"
 	"net/http"
 	"strconv"
+	"time"
+	"fmt"
+	"os"
+	"io"
 
 	"github.com/gorilla/mux"
 	"github.com/samichen99/HAP-hospital-management-system/models"
@@ -17,12 +22,13 @@ func CreateFileHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Invalid input", http.StatusBadRequest)
 		return
 	}
-	if err := repositories.CreateFile(file); err != nil {
+	if err := repositories.CreateFile(&file); err != nil {
 		http.Error(w, "Failed to create file", http.StatusInternalServerError)
 		return
 	}
+	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusCreated)
-	json.NewEncoder(w).Encode(map[string]string{"message": "File created successfully"})
+	_ = json.NewEncoder(w).Encode(file)
 }
 
 // GetFileByIDHandler
@@ -110,4 +116,78 @@ func UpdateFileHandler(w http.ResponseWriter, r *http.Request) {
 
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(map[string]string{"message": "File updated successfully"})
+}
+
+// file upload handler
+
+func UploadFileHandler(w http.ResponseWriter, r *http.Request) {
+	r.ParseMultipartForm(10 << 20)
+
+	file, handler, err := r.FormFile("file")
+	
+
+	if err != nil {
+		http.Error(w, "Error parsing form data", http.StatusBadRequest)
+		return
+	}
+	defer file.Close()
+
+	//create uploads directory
+
+	if _, err := os.Stat("./uploads"); os.IsNotExist(err) {
+		os.Mkdir("./uploads", os.ModePerm)
+	}
+
+	//save file to uploads directory
+
+	filePath := fmt.Sprintf("./uploads/%s", handler.Filename)
+	dst, err := os.Create(filePath)
+
+	if err != nil {
+		http.Error(w, "Error saving file", http.StatusInternalServerError)
+		return
+	}
+
+	defer dst.Close()
+	io.Copy(dst, file)
+
+	var patient models.Patient
+	var doctor models.Doctor
+
+	patient.ID, _ = strconv.Atoi(r.FormValue("patient_id"))
+	doctor.ID, _ = strconv.Atoi(r.FormValue("doctor_id"))
+	description := r.FormValue("description")
+
+	//save file record to db
+
+	newFile := models.File{
+		PatientID: patient.ID,
+		DoctorID:  doctor.ID,
+		FileName: handler.Filename,
+		FileType: handler.Header.Get("Content-Type"),
+		FileURL: filePath,
+		UploadDate: time.Now(),
+		Description: description,
+	}
+
+	if err := repositories.CreateFile(newFile); err != nil {
+		http.Error(w, "Error saving file record", http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteHeader(http.StatusCreated)
+	json.NewEncoder(w).Encode(map[string]string{"message": "File uploaded successfully"})
+}
+
+//file download handler
+
+func DownloadFileHandler(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	id, _:= strconv.Atoi(vars["id"])
+	file, err := repositories.GetFileByID(id)
+	if err != nil {
+		http.Error(w, "Error fetching file", http.StatusInternalServerError)
+		return
+	}
+	http.ServeFile(w, r, file.FileURL)
 }

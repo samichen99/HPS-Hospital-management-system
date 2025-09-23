@@ -113,3 +113,23 @@ func DeletePatientHandler(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 	w.Write([]byte("Patient deleted successfully"))
 }
+
+// search patients by name :
+
+func SearchPatientsHandler(w http.ResponseWriter, r *http.Request) {
+	name := r.URL.Query().Get("name")
+	if name == "" {
+		http.Error(w, "missing name query parameter", http.StatusBadRequest)
+		return
+	}
+
+	patients, err := repositories.SearchPatientsByName(name)
+	if err != nil {
+		http.Error(w, "error searching patients", http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(patients)
+}
+

@@ -9,22 +9,26 @@ import (
 )
 
 // CreateFile inserts a new file record
-func CreateFile(file models.File) error {
+func CreateFile(file *models.File) error {
 	query := `
-		INSERT INTO files (patient_id, file_name, file_type, file_path, uploaded_at, description)
-		VALUES ($1, $2, $3, $4, CURRENT_TIMESTAMP, $5)
+		INSERT INTO files (patient_id, file_name, file_type, file_url, description, upload_date)
+		VALUES ($1, $2, $3, $4, $5, NOW())
+		RETURNING id, uploaded_at
 	`
-	_, err := config.DB.Exec(query,
+
+	err := config.DB.QueryRow(
+		query,
 		file.PatientID,
+		file.FileName,
 		file.FileType,
 		file.FileURL,
-		
-	)
+		file.Description,
+	).Scan(&file.ID, &file.UploadDate)
+
 	if err != nil {
-		log.Println("Error creating file:", err)
 		return err
 	}
-	log.Println("File created successfully.")
+
 	return nil
 }
 
@@ -32,16 +36,20 @@ func CreateFile(file models.File) error {
 func GetFileByID(id int) (models.File, error) {
 	var file models.File
 	query := `
-		SELECT id, patient_id, file_name, file_type, file_path, uploaded_at, description
+		SELECT id, patient_id, doctor_id, file_name, file_type, file_url, upload_date, description
 		FROM files WHERE id = $1
 	`
-	err := config.DB.QueryRow(query, id).Scan(
+	
+	row := config.DB.QueryRow(query, id)
+	err:= row.Scan(
 			&file.ID,
 			&file.PatientID,
 			&file.DoctorID,
+			&file.FileName,
 			&file.FileType,
 			&file.FileURL,
 			&file.UploadDate,
+			&file.Description,
 	)
 	if err != nil {
 		if err == sql.ErrNoRows {
@@ -57,8 +65,8 @@ func GetFileByID(id int) (models.File, error) {
 // GetAllFiles fetches all files
 func GetAllFiles() ([]models.File, error) {
 	query := `
-		SELECT id, patient_id, file_name, file_type, file_path, uploaded_at, description
-		FROM files ORDER BY uploaded_at DESC
+		SELECT id, patient_id, doctor_id, file_name, file_type, file_url, upload_date, description
+		FROM files ORDER BY upload_date DESC
 	`
 	rows, err := config.DB.Query(query)
 	if err != nil {
@@ -74,9 +82,11 @@ func GetAllFiles() ([]models.File, error) {
 			&file.ID,
 			&file.PatientID,
 			&file.DoctorID,
+			&file.FileName,
 			&file.FileType,
 			&file.FileURL,
 			&file.UploadDate,
+			&file.Description,
 		)
 		if err != nil {
 			log.Println("Error scanning file:", err)
@@ -90,8 +100,8 @@ func GetAllFiles() ([]models.File, error) {
 // GetFilesByPatientID fetches all files for a specific patient
 func GetFilesByPatientID(patientID int) ([]models.File, error) {
 	query := `
-		SELECT id, patient_id, file_name, file_type, file_path, uploaded_at, description
-		FROM files WHERE patient_id = $1 ORDER BY uploaded_at DESC
+		SELECT id, patient_id, doctor_id, file_name, file_type, file_url, upload_date, description
+		FROM files WHERE patient_id = $1 ORDER BY upload_date DESC
 	`
 	rows, err := config.DB.Query(query, patientID)
 	if err != nil {
@@ -107,9 +117,11 @@ func GetFilesByPatientID(patientID int) ([]models.File, error) {
 			&file.ID,
 			&file.PatientID,
 			&file.DoctorID,
+			&file.FileName,
 			&file.FileType,
 			&file.FileURL,
 			&file.UploadDate,
+			&file.Description,
 			
 		)
 		if err != nil {

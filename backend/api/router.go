@@ -43,6 +43,7 @@ func NewRouter() *mux.Router {
 	api.HandleFunc("/patients", handlers.CreatePatientHandler).Methods("POST")
 	api.HandleFunc("/patients/{id}", handlers.UpdatePatientHandler).Methods("PUT")
 	api.HandleFunc("/patients/{id}", handlers.DeletePatientHandler).Methods("DELETE")
+	api.HandleFunc("/patients/search", handlers.SearchPatientsHandler).Methods("GET")
 
 	// doctor routes
 	api.HandleFunc("/doctors", handlers.GetAllDoctorsHandler).Methods("GET")
@@ -50,6 +51,7 @@ func NewRouter() *mux.Router {
 	api.HandleFunc("/doctors", handlers.CreateDoctorHandler).Methods("POST")
 	api.HandleFunc("/doctors/{id}", handlers.UpdateDoctorHandler).Methods("PUT")
 	api.HandleFunc("/doctors/{id}", handlers.DeleteDoctorHandler).Methods("DELETE")
+	api.HandleFunc("/doctors/search", handlers.SearchDoctorsHandler).Methods("GET")
 
 	// appointment routes
 	api.HandleFunc("/appointments", handlers.GetAllAppointmentsHandler).Methods("GET")
@@ -83,6 +85,8 @@ func NewRouter() *mux.Router {
 	api.HandleFunc("/files", handlers.CreateFileHandler).Methods("POST")
 	api.HandleFunc("/files/{id}", handlers.DeleteFileHandler).Methods("DELETE")
 	api.HandleFunc("/files/{id}", handlers.UpdateFileHandler).Methods("PUT")
+	api.HandleFunc("/files/upload", handlers.UploadFileHandler).Methods("POST")
+	api.HandleFunc("/files/download/{id}", handlers.DownloadFileHandler).Methods("GET")
 
 	// file filtering routes
 	api.HandleFunc("/files/patient/{patient_id}", handlers.GetFilesByPatientIDHandler).Methods("GET")
@@ -93,6 +97,8 @@ func NewRouter() *mux.Router {
 	api.HandleFunc("/invoices", handlers.CreateInvoiceHandler).Methods("POST")
 	api.HandleFunc("/invoices/{id}", handlers.UpdateInvoiceHandler).Methods("PUT")
 	api.HandleFunc("/invoices/{id}", handlers.DeleteInvoiceHandler).Methods("DELETE")
+	api.HandleFunc("/invoices/{id}", handlers.MarkInvoicePaidHandler).Methods("PATCH")
+	api.HandleFunc("/invoices/{id}", handlers.FilterInvoiceHandler).Methods("GET")
 	
 	// invoice filtering routes
 	api.HandleFunc("/invoices/patient/{patient_id}", handlers.GetInvoicesByPatientHandler).Methods("GET")

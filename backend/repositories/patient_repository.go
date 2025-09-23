@@ -149,3 +149,37 @@ func DeletePatient(id int) error {
 	log.Println("Patient deleted successfully.")
 	return nil
 }
+
+func SearchPatientsByName (name string) ([]models.Patient, error) {
+	query:= `
+	select id, user_id, full_name, date_of_birth, gender, phone, address, insurance_number
+	from patients
+	where full_name ILIKE '%' || $1 || '%'
+	order by full_name
+	`
+	rows, err := config.DB.Query(query, "%"+name+"%")
+	if err != nil {
+		return nil, err
+	}
+
+	defer rows.Close()
+	var patients []models.Patient
+	for rows.Next(){
+		var patient models.Patient
+		if err := rows.Scan(
+			patient.ID,
+			patient.UserID,
+			patient.FullName,
+			patient.DateOfBirth,
+			patient.Gender,
+			patient.Phone,
+			patient.Address,
+			patient.InsuranceNumber,
+		); err != nil {
+			continue
+		}
+		patients = append(patients, patient)
+		
+	}
+	return patients, nil
+}
