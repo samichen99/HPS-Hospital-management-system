@@ -11,14 +11,15 @@ import (
 // CreateFile inserts a new file record
 func CreateFile(file *models.File) error {
 	query := `
-		INSERT INTO files (patient_id, file_name, file_type, file_url, description, upload_date)
-		VALUES ($1, $2, $3, $4, $5, NOW())
-		RETURNING id, uploaded_at
+		INSERT INTO files (patient_id, doctor_id, file_name, file_type, file_url, description)
+		VALUES ($1, $2, $3, $4, $5, $6)
+		RETURNING id, upload_date
 	`
 
 	err := config.DB.QueryRow(
 		query,
 		file.PatientID,
+		file.DoctorID,
 		file.FileName,
 		file.FileType,
 		file.FileURL,

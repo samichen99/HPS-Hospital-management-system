@@ -170,7 +170,7 @@ func UploadFileHandler(w http.ResponseWriter, r *http.Request) {
 		Description: description,
 	}
 
-	if err := repositories.CreateFile(newFile); err != nil {
+	if err := repositories.CreateFile(&newFile); err != nil {
 		http.Error(w, "Error saving file record", http.StatusInternalServerError)
 		return
 	}
