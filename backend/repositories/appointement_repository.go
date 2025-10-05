@@ -3,8 +3,10 @@ package repositories
 import (
 	"database/sql"
 	"log"
+
 	"github.com/samichen99/HAP-hospital-management-system/config"
 	"github.com/samichen99/HAP-hospital-management-system/models"
+	"github.com/samichen99/HAP-hospital-management-system/utils"
 )
 
 func CreateAppointment(appointment models.Appointment) error {
@@ -26,6 +28,12 @@ func CreateAppointment(appointment models.Appointment) error {
 		return err
 	}
 	log.Println("Appointment created successfully.")
+
+	// kafka publish
+	if err := utils.PublishAppointmentEvent("appointment.created", appointment); err != nil {
+		log.Printf("Failed to publish appointment event to Kafka: %v", err)
+	}
+	
 	return nil
 }
 
@@ -80,6 +88,11 @@ func UpdateAppointment(appointment models.Appointment) error {
 		return err
 	}
 	log.Println("Appointment updated successfully.")
+
+	if err := utils.PublishAppointmentEvent("appointment.updated", appointment); err != nil {
+		log.Printf("Failed to publish appointment update event to Kafka: %v", err)
+	}
+
 	return nil
 }
 

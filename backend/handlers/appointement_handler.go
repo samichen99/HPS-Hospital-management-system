@@ -3,10 +3,12 @@ package handlers
 import (
 	"encoding/json"
 	"net/http"
+	"log"
 	"strconv"
 	"github.com/gorilla/mux"
 	"github.com/samichen99/HAP-hospital-management-system/models"
 	"github.com/samichen99/HAP-hospital-management-system/repositories"
+	"github.com/samichen99/HAP-hospital-management-system/utils"
 )
 
 // CreateAppointmentHandler:
@@ -19,21 +21,22 @@ func CreateAppointmentHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Set default status if not provided:
-
 	if appointment.Status == "" {
 		appointment.Status = "scheduled"
 	}
 
-	// Set default duration if not provided:
-
 	if appointment.Duration == 0 {
-		appointment.Duration = 30 //
+		appointment.Duration = 30
 	}
 
 	if err := repositories.CreateAppointment(appointment); err != nil {
 		http.Error(w, "Failed to create appointment", http.StatusInternalServerError)
 		return
+	}
+
+	// Publish Kafka event after DB insert
+	if err := utils.PublishAppointmentEvent("appointment.created", appointment); err != nil {
+		log.Printf("Kafka publish failed: %v", err)
 	}
 
 	w.WriteHeader(http.StatusCreated)
