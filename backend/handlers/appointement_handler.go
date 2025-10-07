@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"net/http"
 	"log"
+	"context"
+	"time"
 	"strconv"
 	"github.com/gorilla/mux"
 	"github.com/samichen99/HAP-hospital-management-system/models"
@@ -29,14 +31,19 @@ func CreateAppointmentHandler(w http.ResponseWriter, r *http.Request) {
 		appointment.Duration = 30
 	}
 
-	if err := repositories.CreateAppointment(appointment); err != nil {
-		http.Error(w, "Failed to create appointment", http.StatusInternalServerError)
-		return
-	}
 
 	// Publish Kafka event after DB insert
-	if err := utils.PublishAppointmentEvent("appointment.created", appointment); err != nil {
-		log.Printf("Kafka publish failed: %v", err)
+	if err := repositories.CreateAppointment(appointment); err != nil {
+    http.Error(w, "Failed to create appointment", http.StatusInternalServerError)
+    return
+	}
+
+	// publish to kafka (non-blocking context timeout)
+	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
+	defer cancel()
+	if err := utils.PublishAppointmentEvent(ctx, "appointments.created", appointment); err != nil {
+    // log but do not fail response
+    log.Printf("Failed to publish appointment.created: %v", err)
 	}
 
 	w.WriteHeader(http.StatusCreated)
@@ -82,8 +89,15 @@ func UpdateAppointmentHandler(w http.ResponseWriter, r *http.Request) {
 	appointment.ID = id
 
 	if err := repositories.UpdateAppointment(appointment); err != nil {
-		http.Error(w, "Failed to update appointment", http.StatusInternalServerError)
-		return
+    http.Error(w, "Failed to update appointment", http.StatusInternalServerError)
+    return
+}
+
+	// publish update event
+	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
+	defer cancel()
+	if err := utils.PublishAppointmentEvent(ctx, "appointments.updated", appointment); err != nil {
+    log.Printf("Failed to publish appointment.updated: %v", err)
 	}
 
 	w.WriteHeader(http.StatusOK)

@@ -6,41 +6,39 @@ import (
 
 	"github.com/samichen99/HAP-hospital-management-system/config"
 	"github.com/samichen99/HAP-hospital-management-system/models"
-	"github.com/samichen99/HAP-hospital-management-system/utils"
 )
 
+// CreateAppointment inserts a new appointment into the database
 func CreateAppointment(appointment models.Appointment) error {
 	query := `
 		INSERT INTO appointments (patient_id, doctor_id, date_time, status, reason, notes, duration)
 		VALUES ($1, $2, $3, $4, $5, $6, $7)
+		RETURNING id, date_time
 	`
-	_, err := config.DB.Exec(query, 
-		appointment.PatientID, 
-		appointment.DoctorID, 
-		appointment.DateTime, 
-		appointment.Status, 
-		appointment.Reason, 
-		appointment.Notes, 
+	err := config.DB.QueryRow(query,
+		appointment.PatientID,
+		appointment.DoctorID,
+		appointment.DateTime,
+		appointment.Status,
+		appointment.Reason,
+		appointment.Notes,
 		appointment.Duration,
-	)
+	).Scan(&appointment.ID, &appointment.DateTime)
+
 	if err != nil {
-		log.Println("Error creating appointment:", err)
+		log.Printf("[CreateAppointment] SQL Error: %v", err)
+		log.Printf("[CreateAppointment] Input: %+v", appointment)
 		return err
 	}
-	log.Println("Appointment created successfully.")
 
-	// kafka publish
-	if err := utils.PublishAppointmentEvent("appointment.created", appointment); err != nil {
-		log.Printf("Failed to publish appointment event to Kafka: %v", err)
-	}
-	
+	log.Println("Appointment created successfully. ID:", appointment.ID)
 	return nil
 }
 
 func GetAppointmentByID(id int) (models.Appointment, error) {
 	var appointment models.Appointment
 	query := `
-		SELECT id, patient_id, doctor_id, date_time, status, reason, notes, duration, created_at, updated_at
+		SELECT id, patient_id, doctor_id, date_time, status, reason, notes, duration
 		FROM appointments
 		WHERE id = $1
 	`
@@ -53,8 +51,6 @@ func GetAppointmentByID(id int) (models.Appointment, error) {
 		&appointment.Reason,
 		&appointment.Notes,
 		&appointment.Duration,
-		&appointment.CreatedAt,
-		&appointment.UpdatedAt,
 	)
 	if err != nil {
 		if err == sql.ErrNoRows {
@@ -67,10 +63,11 @@ func GetAppointmentByID(id int) (models.Appointment, error) {
 	return appointment, nil
 }
 
+// UpdateAppointment updates an existing appointment
 func UpdateAppointment(appointment models.Appointment) error {
 	query := `
 		UPDATE appointments
-		SET patient_id = $1, doctor_id = $2, date_time = $3, status = $4, reason = $5, notes = $6, duration = $7, updated_at = CURRENT_TIMESTAMP
+		SET patient_id = $1, doctor_id = $2, date_time = $3, status = $4, reason = $5, notes = $6, duration = $7
 		WHERE id = $8
 	`
 	_, err := config.DB.Exec(query,
@@ -87,18 +84,14 @@ func UpdateAppointment(appointment models.Appointment) error {
 		log.Println("Error updating appointment:", err)
 		return err
 	}
-	log.Println("Appointment updated successfully.")
 
-	if err := utils.PublishAppointmentEvent("appointment.updated", appointment); err != nil {
-		log.Printf("Failed to publish appointment update event to Kafka: %v", err)
-	}
-
+	log.Println("Appointment updated successfully. ID:", appointment.ID)
 	return nil
 }
 
 func GetAllAppointments() ([]models.Appointment, error) {
 	query := `
-		SELECT id, patient_id, doctor_id, date_time, status, reason, notes, duration, created_at, updated_at
+		SELECT id, patient_id, doctor_id, date_time, status, reason, notes, duration
 		FROM appointments
 		ORDER BY date_time DESC
 	`
@@ -121,8 +114,6 @@ func GetAllAppointments() ([]models.Appointment, error) {
 			&appointment.Reason,
 			&appointment.Notes,
 			&appointment.Duration,
-			&appointment.CreatedAt,
-			&appointment.UpdatedAt,
 		)
 		if err != nil {
 			log.Println("Error scanning appointment:", err)
@@ -135,7 +126,7 @@ func GetAllAppointments() ([]models.Appointment, error) {
 
 func GetAppointmentsByPatientID(patientID int) ([]models.Appointment, error) {
 	query := `
-		SELECT id, patient_id, doctor_id, date_time, status, reason, notes, duration, created_at, updated_at
+		SELECT id, patient_id, doctor_id, date_time, status, reason, notes, duration
 		FROM appointments
 		WHERE patient_id = $1
 		ORDER BY date_time DESC
@@ -159,8 +150,6 @@ func GetAppointmentsByPatientID(patientID int) ([]models.Appointment, error) {
 			&appointment.Reason,
 			&appointment.Notes,
 			&appointment.Duration,
-			&appointment.CreatedAt,
-			&appointment.UpdatedAt,
 		)
 		if err != nil {
 			log.Println("Error scanning appointment:", err)
@@ -173,7 +162,7 @@ func GetAppointmentsByPatientID(patientID int) ([]models.Appointment, error) {
 
 func GetAppointmentsByDoctorID(doctorID int) ([]models.Appointment, error) {
 	query := `
-		SELECT id, patient_id, doctor_id, date_time, status, reason, notes, duration, created_at, updated_at
+		SELECT id, patient_id, doctor_id, date_time, status, reason, notes, duration
 		FROM appointments
 		WHERE doctor_id = $1
 		ORDER BY date_time DESC
@@ -197,8 +186,6 @@ func GetAppointmentsByDoctorID(doctorID int) ([]models.Appointment, error) {
 			&appointment.Reason,
 			&appointment.Notes,
 			&appointment.Duration,
-			&appointment.CreatedAt,
-			&appointment.UpdatedAt,
 		)
 		if err != nil {
 			log.Println("Error scanning appointment:", err)
@@ -211,7 +198,7 @@ func GetAppointmentsByDoctorID(doctorID int) ([]models.Appointment, error) {
 
 func GetAppointmentsByStatus(status string) ([]models.Appointment, error) {
 	query := `
-		SELECT id, patient_id, doctor_id, date_time, status, reason, notes, duration, created_at, updated_at
+		SELECT id, patient_id, doctor_id, date_time, status, reason, notes, duration
 		FROM appointments
 		WHERE status = $1
 		ORDER BY date_time ASC
@@ -235,8 +222,6 @@ func GetAppointmentsByStatus(status string) ([]models.Appointment, error) {
 			&appointment.Reason,
 			&appointment.Notes,
 			&appointment.Duration,
-			&appointment.CreatedAt,
-			&appointment.UpdatedAt,
 		)
 		if err != nil {
 			log.Println("Error scanning appointment:", err)

@@ -11,6 +11,4 @@ type Appointment struct {
 	Reason      string    `json:"reason"`
 	Notes       string    `json:"notes"`
 	Duration    int       `json:"duration"` 
-	CreatedAt   time.Time `json:"created_at"`
-	UpdatedAt   time.Time `json:"updated_at"`
 }
