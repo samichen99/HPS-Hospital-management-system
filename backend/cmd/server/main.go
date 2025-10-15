@@ -14,8 +14,7 @@ import (
 )
 
 func main() {
-
-	// Init Kafka writers
+	// init kafka writers
 	topics := []string{
 		"appointments.created",
 		"appointments.updated",
@@ -23,20 +22,37 @@ func main() {
 	}
 	utils.InitKafkaWriters(topics)
 
-	// Init DB
-	config.InitDb()
+	// Init both DBs
+	config.InitDB()
+	//db := config.GormDB
+
+	// Run GORM migrations
+	/*err := db.AutoMigrate(
+		&models.User{},
+		&models.Patient{},
+		&models.Doctor{},
+		&models.Appointment{},
+		&models.MedicalRecord{},
+		&models.File{},
+		&models.Invoice{},
+		&models.Payment{},
+	)
+	if err != nil {
+		log.Fatalf("Auto migration failed: %v", err)
+	}*/
+	log.Println("Database connected (SQL + GORM) and migrations applied successfully.")
 
 	// Init Router
 	router := api.NewRouter()
 
-	// Create an http.Server instance
+	// Create HTTP server instance
 	srv := &http.Server{
 		Addr:    ":8080",
 		Handler: router,
 	}
 
-	// Start consumers (runs in background)
-	utils.StartAppointmentConsumers(topics, "appointment-demo-consumer-group")
+	// Start Kafka consumers
+	utils.StartAppointmentConsumers(topics, "appointment-consumer-group")
 
 	// Start HTTP server in goroutine
 	go func() {
@@ -53,6 +69,7 @@ func main() {
 	log.Println("Shutting down server...")
 
 	utils.CloseKafkaWriters()
+	config.CloseDb()
 
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()

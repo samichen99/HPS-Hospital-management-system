@@ -1,20 +1,20 @@
 package handlers
 
 import (
-	"encoding/json"
-	"net/http"
-	"log"
 	"context"
-	"time"
+	"encoding/json"
+	"log"
+	"net/http"
 	"strconv"
+	"time"
+
 	"github.com/gorilla/mux"
 	"github.com/samichen99/HAP-hospital-management-system/models"
 	"github.com/samichen99/HAP-hospital-management-system/repositories"
 	"github.com/samichen99/HAP-hospital-management-system/utils"
 )
 
-// CreateAppointmentHandler:
-
+// CreateAppointmentHandler
 func CreateAppointmentHandler(w http.ResponseWriter, r *http.Request) {
 	var appointment models.Appointment
 
@@ -31,27 +31,24 @@ func CreateAppointmentHandler(w http.ResponseWriter, r *http.Request) {
 		appointment.Duration = 30
 	}
 
-
-	// Publish Kafka event after DB insert
-	if err := repositories.CreateAppointment(appointment); err != nil {
-    http.Error(w, "Failed to create appointment", http.StatusInternalServerError)
-    return
+	if err := repositories.CreateAppointment(&appointment); err != nil {
+		http.Error(w, "Failed to create appointment", http.StatusInternalServerError)
+		return
 	}
 
-	// publish to kafka (non-blocking context timeout)
+	// Publish Kafka event
 	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
 	defer cancel()
 	if err := utils.PublishAppointmentEvent(ctx, "appointments.created", appointment); err != nil {
-    // log but do not fail response
-    log.Printf("Failed to publish appointment.created: %v", err)
+		log.Printf("Failed to publish appointment.created: %v", err)
 	}
 
+	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusCreated)
-	w.Write([]byte("Appointment created successfully"))
+	json.NewEncoder(w).Encode(appointment)
 }
 
-// GetAppointmentByIDHandler :
-
+// GetAppointmentByIDHandler
 func GetAppointmentByIDHandler(w http.ResponseWriter, r *http.Request) {
 	idParam := mux.Vars(r)["id"]
 	id, err := strconv.Atoi(idParam)
@@ -62,7 +59,7 @@ func GetAppointmentByIDHandler(w http.ResponseWriter, r *http.Request) {
 
 	appointment, err := repositories.GetAppointmentByID(id)
 	if err != nil {
-		http.Error(w, "Appointment not found", http.StatusInternalServerError)
+		http.Error(w, "Appointment not found", http.StatusNotFound)
 		return
 	}
 
@@ -70,7 +67,7 @@ func GetAppointmentByIDHandler(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(appointment)
 }
 
-// UpdateAppointmentHandler :
+//update appointment handler
 
 func UpdateAppointmentHandler(w http.ResponseWriter, r *http.Request) {
 	idParam := mux.Vars(r)["id"]
@@ -86,26 +83,69 @@ func UpdateAppointmentHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	appointment.ID = id
+	appointment.ID = uint(id)
 
-	if err := repositories.UpdateAppointment(appointment); err != nil {
-    http.Error(w, "Failed to update appointment", http.StatusInternalServerError)
-    return
-}
+	if err := repositories.UpdateAppointment(&appointment); err != nil {
+		http.Error(w, "Failed to update appointment", http.StatusInternalServerError)
+		return
+	}
 
-	// publish update event
 	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
 	defer cancel()
 	if err := utils.PublishAppointmentEvent(ctx, "appointments.updated", appointment); err != nil {
-    log.Printf("Failed to publish appointment.updated: %v", err)
+		log.Printf("Failed to publish appointment.updated: %v", err)
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(map[string]string{
+		"message": "Appointment updated successfully",
+	})
+}
+
+// UpdateAppointmentStatusHandler
+func UpdateAppointmentStatusHandler(w http.ResponseWriter, r *http.Request) {
+	idParam := mux.Vars(r)["id"]
+	id, err := strconv.Atoi(idParam)
+	if err != nil {
+		http.Error(w, "Invalid appointment ID", http.StatusBadRequest)
+		return
+	}
+
+	var payload struct {
+		Status string `json:"status"`
+	}
+	if err := json.NewDecoder(r.Body).Decode(&payload); err != nil {
+		http.Error(w, "Invalid request body", http.StatusBadRequest)
+		return
+	}
+
+	if payload.Status == "" {
+		http.Error(w, "Status is required", http.StatusBadRequest)
+		return
+	}
+
+	if err := repositories.UpdateAppointmentStatus(id, payload.Status); err != nil {
+		http.Error(w, "Failed to update appointment status", http.StatusInternalServerError)
+		return
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
+	defer cancel()
+	if err := utils.PublishAppointmentEvent(ctx, "appointments.status_updated", map[string]interface{}{
+		"id":     id,
+		"status": payload.Status,
+	}); err != nil {
+		log.Printf("Failed to publish appointments.status_updated: %v", err)
 	}
 
 	w.WriteHeader(http.StatusOK)
-	w.Write([]byte("Appointment updated successfully"))
+	json.NewEncoder(w).Encode(map[string]string{
+		"message": "Appointment status updated successfully",
+	})
 }
 
-// GetAllAppointmentsHandler :
-
+// GetAllAppointmentsHandler
 func GetAllAppointmentsHandler(w http.ResponseWriter, r *http.Request) {
 	appointments, err := repositories.GetAllAppointments()
 	if err != nil {
@@ -117,8 +157,7 @@ func GetAllAppointmentsHandler(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(appointments)
 }
 
-// GetAppointmentsByPatientIDHandler :
-
+// GetAppointmentsByPatientIDHandler
 func GetAppointmentsByPatientIDHandler(w http.ResponseWriter, r *http.Request) {
 	idParam := mux.Vars(r)["patient_id"]
 	patientID, err := strconv.Atoi(idParam)
@@ -129,7 +168,7 @@ func GetAppointmentsByPatientIDHandler(w http.ResponseWriter, r *http.Request) {
 
 	appointments, err := repositories.GetAppointmentsByPatientID(patientID)
 	if err != nil {
-		http.Error(w, "Failed to retrieve patient appointments", http.StatusInternalServerError)
+		http.Error(w, "Failed to retrieve appointments", http.StatusInternalServerError)
 		return
 	}
 
@@ -180,69 +219,12 @@ func GetAppointmentsByStatusHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Failed to retrieve appointments by status", http.StatusInternalServerError)
 		return
 	}
-
+ 
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(appointments)
 }
 
-// UpdateAppointmentStatusHandler :
-
-func UpdateAppointmentStatusHandler(w http.ResponseWriter, r *http.Request) {
-	idParam := mux.Vars(r)["id"]
-	id, err := strconv.Atoi(idParam)
-	if err != nil {
-		http.Error(w, "Invalid appointment ID", http.StatusBadRequest)
-		return
-	}
-
-	var statusUpdate struct {
-		Status string `json:"status"`
-		Notes  string `json:"notes,omitempty"`
-	}
-
-	if err := json.NewDecoder(r.Body).Decode(&statusUpdate); err != nil {
-		http.Error(w, "Invalid request body", http.StatusBadRequest)
-		return
-	}
-
-	validStatuses := map[string]bool{
-		"scheduled": true,
-		"completed": true,
-		"cancelled": true,
-		"no-show":   true,
-	}
-
-	if !validStatuses[statusUpdate.Status] {
-		http.Error(w, "Invalid status. Valid statuses are: scheduled, completed, cancelled, no-show", http.StatusBadRequest)
-		return
-	}
-
-	// Get appointment :
-
-	appointment, err := repositories.GetAppointmentByID(id)
-	if err != nil {
-		http.Error(w, "Appointment not found", http.StatusInternalServerError)
-		return
-	}
-
-	// Update status and notes : 
-
-	appointment.Status = statusUpdate.Status
-	if statusUpdate.Notes != "" {
-		appointment.Notes = statusUpdate.Notes
-	}
-
-	if err := repositories.UpdateAppointment(appointment); err != nil {
-		http.Error(w, "Failed to update appointment status", http.StatusInternalServerError)
-		return
-	}
-
-	w.WriteHeader(http.StatusOK)
-	w.Write([]byte("Appointment status updated successfully"))
-}
-
-// DeleteAppointmentHandler :
-
+// DeleteAppointmentHandler
 func DeleteAppointmentHandler(w http.ResponseWriter, r *http.Request) {
 	idParam := mux.Vars(r)["id"]
 	id, err := strconv.Atoi(idParam)
@@ -256,6 +238,12 @@ func DeleteAppointmentHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
+	defer cancel()
+	if err := utils.PublishAppointmentEvent(ctx, "appointments.deleted", map[string]int{"id": id}); err != nil {
+		log.Printf("Failed to publish appointments.deleted: %v", err)
+	}
+
 	w.WriteHeader(http.StatusOK)
-	w.Write([]byte("Appointment deleted successfully"))
+	json.NewEncoder(w).Encode(map[string]string{"message": "Appointment deleted successfully"})
 }

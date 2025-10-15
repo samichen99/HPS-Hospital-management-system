@@ -1,244 +1,107 @@
 package repositories
 
 import (
-	"database/sql"
 	"log"
 
 	"github.com/samichen99/HAP-hospital-management-system/config"
 	"github.com/samichen99/HAP-hospital-management-system/models"
 )
 
-// CreateAppointment inserts a new appointment into the database
-func CreateAppointment(appointment models.Appointment) error {
-	query := `
-		INSERT INTO appointments (patient_id, doctor_id, date_time, status, reason, notes, duration)
-		VALUES ($1, $2, $3, $4, $5, $6, $7)
-		RETURNING id, date_time
-	`
-	err := config.DB.QueryRow(query,
-		appointment.PatientID,
-		appointment.DoctorID,
-		appointment.DateTime,
-		appointment.Status,
-		appointment.Reason,
-		appointment.Notes,
-		appointment.Duration,
-	).Scan(&appointment.ID, &appointment.DateTime)
-
-	if err != nil {
-		log.Printf("[CreateAppointment] SQL Error: %v", err)
+// inserts a new appointment
+func CreateAppointment(appointment *models.Appointment) error {
+	if err := config.GormDB.Create(appointment).Error; err != nil {
+		log.Printf("[CreateAppointment] GORM Error: %v", err)
 		log.Printf("[CreateAppointment] Input: %+v", appointment)
 		return err
 	}
-
 	log.Println("Appointment created successfully. ID:", appointment.ID)
 	return nil
 }
 
+// retrieves an appointment by id
 func GetAppointmentByID(id int) (models.Appointment, error) {
 	var appointment models.Appointment
-	query := `
-		SELECT id, patient_id, doctor_id, date_time, status, reason, notes, duration
-		FROM appointments
-		WHERE id = $1
-	`
-	err := config.DB.QueryRow(query, id).Scan(
-		&appointment.ID,
-		&appointment.PatientID,
-		&appointment.DoctorID,
-		&appointment.DateTime,
-		&appointment.Status,
-		&appointment.Reason,
-		&appointment.Notes,
-		&appointment.Duration,
-	)
-	if err != nil {
-		if err == sql.ErrNoRows {
-			log.Println("No appointment found with that ID.")
-			return appointment, nil
-		}
-		log.Println("Error retrieving appointment:", err)
+	if err := config.GormDB.First(&appointment, id).Error; err != nil {
+		log.Printf("Error retrieving appointment with ID %d: %v", id, err)
 		return appointment, err
 	}
 	return appointment, nil
 }
 
-// UpdateAppointment updates an existing appointment
-func UpdateAppointment(appointment models.Appointment) error {
-	query := `
-		UPDATE appointments
-		SET patient_id = $1, doctor_id = $2, date_time = $3, status = $4, reason = $5, notes = $6, duration = $7
-		WHERE id = $8
-	`
-	_, err := config.DB.Exec(query,
-		appointment.PatientID,
-		appointment.DoctorID,
-		appointment.DateTime,
-		appointment.Status,
-		appointment.Reason,
-		appointment.Notes,
-		appointment.Duration,
-		appointment.ID,
-	)
-	if err != nil {
-		log.Println("Error updating appointment:", err)
+// updates an existing appointment
+func UpdateAppointment(appointment *models.Appointment) error {
+	if err := config.GormDB.Save(appointment).Error; err != nil {
+		log.Printf("Error updating appointment ID %d: %v", appointment.ID, err)
 		return err
 	}
-
 	log.Println("Appointment updated successfully. ID:", appointment.ID)
 	return nil
 }
 
+// returns all appointments ordered by date_time DESC
 func GetAllAppointments() ([]models.Appointment, error) {
-	query := `
-		SELECT id, patient_id, doctor_id, date_time, status, reason, notes, duration
-		FROM appointments
-		ORDER BY date_time DESC
-	`
-	rows, err := config.DB.Query(query)
-	if err != nil {
+	var appointments []models.Appointment
+	if err := config.GormDB.Order("date_time DESC").Find(&appointments).Error; err != nil {
 		log.Println("Error fetching appointments:", err)
 		return nil, err
 	}
-	defer rows.Close()
-
-	var appointments []models.Appointment
-	for rows.Next() {
-		var appointment models.Appointment
-		err := rows.Scan(
-			&appointment.ID,
-			&appointment.PatientID,
-			&appointment.DoctorID,
-			&appointment.DateTime,
-			&appointment.Status,
-			&appointment.Reason,
-			&appointment.Notes,
-			&appointment.Duration,
-		)
-		if err != nil {
-			log.Println("Error scanning appointment:", err)
-			continue
-		}
-		appointments = append(appointments, appointment)
-	}
 	return appointments, nil
 }
 
+// returns all appointments for a patient
 func GetAppointmentsByPatientID(patientID int) ([]models.Appointment, error) {
-	query := `
-		SELECT id, patient_id, doctor_id, date_time, status, reason, notes, duration
-		FROM appointments
-		WHERE patient_id = $1
-		ORDER BY date_time DESC
-	`
-	rows, err := config.DB.Query(query, patientID)
-	if err != nil {
-		log.Println("Error fetching patient appointments:", err)
-		return nil, err
-	}
-	defer rows.Close()
-
 	var appointments []models.Appointment
-	for rows.Next() {
-		var appointment models.Appointment
-		err := rows.Scan(
-			&appointment.ID,
-			&appointment.PatientID,
-			&appointment.DoctorID,
-			&appointment.DateTime,
-			&appointment.Status,
-			&appointment.Reason,
-			&appointment.Notes,
-			&appointment.Duration,
-		)
-		if err != nil {
-			log.Println("Error scanning appointment:", err)
-			continue
-		}
-		appointments = append(appointments, appointment)
+	if err := config.GormDB.Where("patient_id = ?", patientID).
+		Order("date_time DESC").
+		Find(&appointments).Error; err != nil {
+		log.Printf("Error fetching appointments for patient %d: %v", patientID, err)
+		return nil, err
 	}
 	return appointments, nil
 }
 
+// returns all appointments for a doctor
 func GetAppointmentsByDoctorID(doctorID int) ([]models.Appointment, error) {
-	query := `
-		SELECT id, patient_id, doctor_id, date_time, status, reason, notes, duration
-		FROM appointments
-		WHERE doctor_id = $1
-		ORDER BY date_time DESC
-	`
-	rows, err := config.DB.Query(query, doctorID)
-	if err != nil {
-		log.Println("Error fetching doctor appointments:", err)
-		return nil, err
-	}
-	defer rows.Close()
-
 	var appointments []models.Appointment
-	for rows.Next() {
-		var appointment models.Appointment
-		err := rows.Scan(
-			&appointment.ID,
-			&appointment.PatientID,
-			&appointment.DoctorID,
-			&appointment.DateTime,
-			&appointment.Status,
-			&appointment.Reason,
-			&appointment.Notes,
-			&appointment.Duration,
-		)
-		if err != nil {
-			log.Println("Error scanning appointment:", err)
-			continue
-		}
-		appointments = append(appointments, appointment)
+	if err := config.GormDB.Where("doctor_id = ?", doctorID).
+		Order("date_time DESC").
+		Find(&appointments).Error; err != nil {
+		log.Printf("Error fetching appointments for doctor %d: %v", doctorID, err)
+		return nil, err
 	}
 	return appointments, nil
 }
 
+// returns appointments filtered by status
 func GetAppointmentsByStatus(status string) ([]models.Appointment, error) {
-	query := `
-		SELECT id, patient_id, doctor_id, date_time, status, reason, notes, duration
-		FROM appointments
-		WHERE status = $1
-		ORDER BY date_time ASC
-	`
-	rows, err := config.DB.Query(query, status)
-	if err != nil {
-		log.Println("Error fetching appointments by status:", err)
-		return nil, err
-	}
-	defer rows.Close()
-
 	var appointments []models.Appointment
-	for rows.Next() {
-		var appointment models.Appointment
-		err := rows.Scan(
-			&appointment.ID,
-			&appointment.PatientID,
-			&appointment.DoctorID,
-			&appointment.DateTime,
-			&appointment.Status,
-			&appointment.Reason,
-			&appointment.Notes,
-			&appointment.Duration,
-		)
-		if err != nil {
-			log.Println("Error scanning appointment:", err)
-			continue
-		}
-		appointments = append(appointments, appointment)
+	if err := config.GormDB.Where("status = ?", status).
+		Order("date_time ASC").
+		Find(&appointments).Error; err != nil {
+		log.Printf("Error fetching appointments with status '%s': %v", status, err)
+		return nil, err
 	}
 	return appointments, nil
 }
 
+// deletes an appointment by ID
 func DeleteAppointment(id int) error {
-	query := `DELETE FROM appointments WHERE id = $1`
-	_, err := config.DB.Exec(query, id)
-	if err != nil {
-		log.Println("Error deleting appointment:", err)
+	if err := config.GormDB.Delete(&models.Appointment{}, id).Error; err != nil {
+		log.Printf("Error deleting appointment ID %d: %v", id, err)
 		return err
 	}
-	log.Println("Appointment deleted successfully.")
+	log.Println("Appointment deleted successfully. ID:", id)
+	return nil
+}
+
+// updates only the status of an appointment
+func UpdateAppointmentStatus(id int, status string) error {
+	if err := config.GormDB.Model(&models.Appointment{}).
+		Where("id = ?", id).
+		Update("status", status).Error; err != nil {
+		log.Printf("Error updating appointment status ID %d: %v", id, err)
+		return err
+	}
+	log.Println("Appointment status updated successfully. ID:", id)
 	return nil
 }

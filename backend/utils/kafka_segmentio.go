@@ -93,8 +93,6 @@ func startReaderForTopic(topic, groupID string) {
 		Brokers:   brokers,
 		Topic:     topic,
 		GroupID:   groupID,
-		MinBytes:  1,    
-		MaxBytes:  10e6, 
 		MaxWait:   500 * time.Millisecond,
 	})
 	log.Printf("[kafka-consumer] started reader topic=%s group=%s", topic, groupID)

@@ -1,43 +1,53 @@
 package config
+
 import (
 	"database/sql"
-	"fmt"
+	
 	"log"
-	"os"
 
 	_ "github.com/lib/pq"
-	"github.com/joho/godotenv"
+	"gorm.io/driver/postgres"
+	"gorm.io/gorm"
 )
 
-var DB *sql.DB
-func InitDb(){
+var (
+	DB      *sql.DB   // Normal SQL DB 
+	GormDB  *gorm.DB  // GORM DB
+)
 
-err := godotenv.Load(".env")
-if err != nil {
-	log.Fatal("error loading .env file")
-}
-host := os.Getenv("DB_HOST")
-port := os.Getenv("DB_PORT")
-user := os.Getenv("DB_USER")
-password := os.Getenv("DB_PASSWORD")
-dbname := os.Getenv("DB_NAME")
+func InitDB() {
+	dsn := "host=localhost user=postgres password=admin dbname=hospital_db port=5432 sslmode=disable"
 
-psqInfo := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=disable", host, port, user, password, dbname)
-db, err := sql.Open("postgres", psqInfo)
-if err != nil {
-	log.Fatal("error connecting to the database:", err)
-}
-err = db.Ping()
-if err != nil {
-	log.Fatal("cannot reach the database:", err)
-}
-DB = db
-log.Println("Database connection established successfully")
+	// connect standard database/sql
+	var err error
+	DB, err = sql.Open("postgres", dsn)
+	if err != nil {
+		log.Fatalf("Failed to connect to raw DB: %v", err)
+	}
+	if err = DB.Ping(); err != nil {
+		log.Fatalf("Failed to ping raw DB: %v", err)
+	}
+	log.Println("Connected to PostgreSQL using database/sql")
 
+	// connect gorm
+	GormDB, err = gorm.Open(postgres.Open(dsn), &gorm.Config{})
+	if err != nil {
+		log.Fatalf("Failed to connect to GORM DB: %v", err)
+	}
+	log.Println("Connected to PostgreSQL using GORM")
 }
+
 func CloseDb() {
 	if DB != nil {
 		DB.Close()
-		log.Println("Database connection closed")
+		log.Println("database/sql connection closed.")
+	}
+
+	if GormDB != nil {
+		sqlDB, err := GormDB.DB()
+		if err == nil {
+			sqlDB.Close()
+			log.Println("GORM connection closed.")
+		}
 	}
 }

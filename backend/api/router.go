@@ -97,15 +97,12 @@ func NewRouter() *mux.Router {
 	api.HandleFunc("/invoices", handlers.CreateInvoiceHandler).Methods("POST")
 	api.HandleFunc("/invoices/{id}", handlers.UpdateInvoiceHandler).Methods("PUT")
 	api.HandleFunc("/invoices/{id}", handlers.DeleteInvoiceHandler).Methods("DELETE")
-	api.HandleFunc("/invoices/{id}", handlers.MarkInvoicePaidHandler).Methods("PATCH")
+	api.HandleFunc("/invoices/{id}/paid", handlers.MarkInvoicePaidHandler).Methods("PATCH")
 	api.HandleFunc("/invoices/{id}", handlers.FilterInvoiceHandler).Methods("GET")
 	
 	// invoice filtering routes
 	api.HandleFunc("/invoices/patient/{patient_id}", handlers.GetInvoicesByPatientHandler).Methods("GET")
 	api.HandleFunc("/invoices/status/{status}", handlers.GetInvoicesByStatusHandler).Methods("GET")
-
-	// mark invoice as paid
-	api.HandleFunc("/invoices/{id}/paid", handlers.MarkInvoicePaidHandler).Methods("PATCH")
 
 	// Payment routes
 	api.HandleFunc("/payments", handlers.GetAllPaymentsHandler).Methods("GET")
