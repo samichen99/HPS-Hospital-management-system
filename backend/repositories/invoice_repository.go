@@ -1,7 +1,6 @@
 package repositories
 
 import (
-	"database/sql"
 	"log"
 	"time"
 
@@ -9,323 +8,93 @@ import (
 	"github.com/samichen99/HAP-hospital-management-system/models"
 )
 
-// UpdateInvoiceStatusAndPaidAt updates the status and paid_at fields of an invoice
-func UpdateInvoiceStatusAndPaidAt(invoiceID int, status string, paidAt *time.Time) error {
-	var err error
-	if paidAt != nil {
-		_, err = config.DB.Exec(`UPDATE invoices SET status = $1, paid_at = $2 WHERE id = $3`, status, *paidAt, invoiceID)
-	} else {
-		_, err = config.DB.Exec(`UPDATE invoices SET status = $1, paid_at = NULL WHERE id = $2`, status, invoiceID)
-	}
-	if err != nil {
-		log.Println("Error updating invoice status/paid_at:", err)
-		return err
-	}
-	return nil
-}
-
-// CreateInvoice inserts a new invoice
+// CreateInvoice inserts a new invoice record and returns its ID
 func CreateInvoice(inv models.Invoice) (int, error) {
-	query := `
-		INSERT INTO invoices (
-			patient_id, appointment_id, amount, status, due_date, issued_at, paid_at, notes
-		) VALUES ($1, $2, $3, $4, $5, COALESCE($6, CURRENT_TIMESTAMP), $7, $8)
-		RETURNING id
-	`
-	var id int
-	var issuedAt *time.Time
-	if !inv.IssuedAt.IsZero() {
-		issuedAt = &inv.IssuedAt
-	}
-	err := config.DB.QueryRow(
-		query,
-		inv.PatientID,
-		sql.NullInt64{Int64: int64(valueOrZero(inv.AppointmentID)), Valid: inv.AppointmentID != nil},
-		inv.Amount,
-		inv.Status,
-		inv.DueDate,
-		issuedAt,
-		sql.NullTime{Time: valueOrTime(inv.PaidAt), Valid: inv.PaidAt != nil},
-		inv.Notes,
-	).Scan(&id)
-	if err != nil {
+	if err := config.GormDB.Create(&inv).Error; err != nil {
 		log.Println("Error creating invoice:", err)
 		return 0, err
 	}
-	return id, nil
+	return inv.ID, nil
 }
 
-// GetInvoiceByID fetches one invoice
+// GetInvoiceByID retrieves a single invoice by ID
 func GetInvoiceByID(id int) (models.Invoice, error) {
 	var inv models.Invoice
-	var apptID sql.NullInt64
-	var paidAt sql.NullTime
-	query := `
-		SELECT id, patient_id, appointment_id, amount, status, due_date, issued_at, paid_at, notes
-		FROM invoices WHERE id = $1
-	`
-	err := config.DB.QueryRow(query, id).Scan(
-		&inv.ID,
-		&inv.PatientID,
-		&apptID,
-		&inv.Amount,
-		&inv.Status,
-		&inv.DueDate,
-		&inv.IssuedAt,
-		&paidAt,
-		&inv.Notes,
-	)
-	if err != nil {
-		if err == sql.ErrNoRows {
-			return inv, nil
-		}
+	if err := config.GormDB.First(&inv, id).Error; err != nil {
+		log.Println("Error fetching invoice by ID:", err)
 		return inv, err
-	}
-	if apptID.Valid {
-		v := int(apptID.Int64)
-		inv.AppointmentID = &v
-	}
-	if paidAt.Valid {
-		t := paidAt.Time
-		inv.PaidAt = &t
 	}
 	return inv, nil
 }
 
-// GetAllInvoices returns all invoices (newest first)
+// GetAllInvoices retrieves all invoices
 func GetAllInvoices() ([]models.Invoice, error) {
-	query := `
-		SELECT id, patient_id, appointment_id, amount, status, due_date, issued_at, paid_at, notes
-		FROM invoices ORDER BY issued_at DESC, id DESC
-	`
-	rows, err := config.DB.Query(query)
-	if err != nil {
-		log.Println("Error fetching invoices:", err)
+	var invoices []models.Invoice
+	if err := config.GormDB.Find(&invoices).Error; err != nil {
+		log.Println("Error fetching all invoices:", err)
 		return nil, err
 	}
-	defer rows.Close()
-
-	var list []models.Invoice
-	for rows.Next() {
-		var inv models.Invoice
-		var apptID sql.NullInt64
-		var paidAt sql.NullTime
-		if err := rows.Scan(
-			&inv.ID,
-			&inv.PatientID,
-			&apptID,
-			&inv.Amount,
-			&inv.Status,
-			&inv.DueDate,
-			&inv.IssuedAt,
-			&paidAt,
-			&inv.Notes,
-		); err != nil {
-			log.Println("Error scanning invoice:", err)
-			continue
-		}
-		if apptID.Valid {
-			v := int(apptID.Int64)
-			inv.AppointmentID = &v
-		}
-		if paidAt.Valid {
-			t := paidAt.Time
-			inv.PaidAt = &t
-		}
-		list = append(list, inv)
-	}
-	return list, nil
+	return invoices, nil
 }
 
-// UpdateInvoice updates an invoice
+// UpdateInvoice updates an existing invoice
 func UpdateInvoice(inv models.Invoice) error {
-	query := `
-		UPDATE invoices
-		SET patient_id = $1,
-		    appointment_id = $2,
-		    amount = $3,
-		    status = $4,
-		    due_date = $5,
-		    issued_at = $6,
-		    paid_at = $7,
-		    notes = $8
-		WHERE id = $9
-	`
-	_, err := config.DB.Exec(
-		query,
-		inv.PatientID,
-		sql.NullInt64{Int64: int64(valueOrZero(inv.AppointmentID)), Valid: inv.AppointmentID != nil},
-		inv.Amount,
-		inv.Status,
-		inv.DueDate,
-		inv.IssuedAt,
-		sql.NullTime{Time: valueOrTime(inv.PaidAt), Valid: inv.PaidAt != nil},
-		inv.Notes,
-		inv.ID,
-	)
-	if err != nil {
+	if err := config.GormDB.Save(&inv).Error; err != nil {
 		log.Println("Error updating invoice:", err)
 		return err
 	}
 	return nil
 }
 
-// UpdateInvoiceStatus updates the status and paid_at fields
-func UpdateInvoiceStatus(id int, status string, paidAt *time.Time) error {
-	query := `
-		update invoices set status = $1, paid_at = $2 where id = $3`
-	_, err := config.DB.Exec(query, status, paidAt, id)
-	if err != nil {
-		log.Println("Error updating invoice status:", err)
-		return err
-	}
-	return nil
-}
-
-// GetInvoiceTotalAndPayments returns invoice amount and current sum of payments
-func GetInvoiceTotalAndPayments(invoiceID int) (float64, float64, error) {
-	var invoiceAmount float64
-	var paymentSum float64
-
-	err := config.DB.QueryRow(`SELECT amount FROM invoices WHERE id = $1`, invoiceID).Scan(&invoiceAmount)
-	if err != nil {
-		return 0, 0, err
-	}
-
-	err = config.DB.QueryRow(`SELECT COALESCE(SUM(amount), 0) FROM payments WHERE invoice_id = $1`, invoiceID).Scan(&paymentSum)
-	if err != nil {
-		return 0, 0, err
-	}
-
-	return invoiceAmount, paymentSum, nil
-}
-
-// DeleteInvoice removes an invoice
+// DeleteInvoice deletes an invoice by ID
 func DeleteInvoice(id int) error {
-	_, err := config.DB.Exec(`DELETE FROM invoices WHERE id = $1`, id)
-	if err != nil {
+	if err := config.GormDB.Delete(&models.Invoice{}, id).Error; err != nil {
 		log.Println("Error deleting invoice:", err)
 		return err
 	}
 	return nil
 }
 
-// Filters
-
+// GetInvoicesByPatientID retrieves all invoices for a given patient
 func GetInvoicesByPatientID(patientID int) ([]models.Invoice, error) {
-	query := `
-		SELECT id, patient_id, appointment_id, amount, status, due_date, issued_at, paid_at, notes
-		FROM invoices WHERE patient_id = $1 ORDER BY issued_at DESC, id DESC
-	`
-	rows, err := config.DB.Query(query, patientID)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-
-	var list []models.Invoice
-	for rows.Next() {
-		var inv models.Invoice
-		var apptID sql.NullInt64
-		var paidAt sql.NullTime
-		if err := rows.Scan(
-			&inv.ID, &inv.PatientID, &apptID, &inv.Amount, &inv.Status,
-			&inv.DueDate, &inv.IssuedAt, &paidAt, &inv.Notes,
-		); err != nil {
-			continue
-		}
-		if apptID.Valid {
-			v := int(apptID.Int64)
-			inv.AppointmentID = &v
-		}
-		if paidAt.Valid {
-			t := paidAt.Time
-			inv.PaidAt = &t
-		}
-		list = append(list, inv)
-	}
-	return list, nil
-}
-
-func GetInvoicesByStatus(status string) ([]models.Invoice, error) {
-	query := `
-		SELECT id, patient_id, appointment_id, amount, status, due_date, issued_at, paid_at, notes
-		FROM invoices WHERE status = $1 ORDER BY issued_at DESC, id DESC
-	`
-	rows, err := config.DB.Query(query, status)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-
-	var list []models.Invoice
-	for rows.Next() {
-		var inv models.Invoice
-		var apptID sql.NullInt64
-		var paidAt sql.NullTime
-		if err := rows.Scan(
-			&inv.ID, &inv.PatientID, &apptID, &inv.Amount, &inv.Status,
-			&inv.DueDate, &inv.IssuedAt, &paidAt, &inv.Notes,
-		); err != nil {
-			continue
-		}
-		if apptID.Valid {
-			v := int(apptID.Int64)
-			inv.AppointmentID = &v
-		}
-		if paidAt.Valid {
-			t := paidAt.Time
-			inv.PaidAt = &t
-		}
-		list = append(list, inv)
-	}
-	return list, nil
-}
-
-func MarkInvoicePaid(id int, paidAt time.Time) error {
-	query := `UPDATE invoices SET status = 'paid', paid_at = $1 WHERE id = $2`
-	_, err := config.DB.Exec(query, paidAt, id)
-	return err
-}
-
-// helpers
-func valueOrZero(p *int) int {
-	if p == nil {
-		return 0
-	}
-	return *p
-}
-func valueOrTime(p *time.Time) time.Time {
-	if p == nil {
-		return time.Time{}
-	}
-	return *p
-}
-
-func FilterInvoicesByDateRange(fromDate, toDate string) ([]models.Invoice, error) {
-	query := `
-		SELECT id, patient_id, appointment_id, amount, status,
-		       due_date, issued_at, paid_at, notes
-		FROM invoices
-		WHERE issued_at BETWEEN $1 AND $2
-		ORDER BY issued_at DESC
-	`
-	rows, err := config.DB.Query(query, fromDate, toDate)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-
 	var invoices []models.Invoice
-	for rows.Next() {
-		var invoice models.Invoice
-		if err := rows.Scan(&invoice.ID, &invoice.PatientID, &invoice.AppointmentID,
-			&invoice.Amount, &invoice.Status, &invoice.DueDate, &invoice.IssuedAt,
-			&invoice.PaidAt, &invoice.Notes); err != nil {
-			return nil, err
-		}
-		invoices = append(invoices, invoice)
+	if err := config.GormDB.Where("patient_id = ?", patientID).Find(&invoices).Error; err != nil {
+		log.Println("Error fetching invoices by patient ID:", err)
+		return nil, err
 	}
 	return invoices, nil
 }
 
+// GetInvoicesByStatus retrieves all invoices with a given status
+func GetInvoicesByStatus(status string) ([]models.Invoice, error) {
+	var invoices []models.Invoice
+	if err := config.GormDB.Where("status = ?", status).Find(&invoices).Error; err != nil {
+		log.Println("Error fetching invoices by status:", err)
+		return nil, err
+	}
+	return invoices, nil
+}
+
+// MarkInvoicePaid marks an invoice as paid and updates the PaidAt field
+func MarkInvoicePaid(id int, paidAt time.Time) error {
+	if err := config.GormDB.Model(&models.Invoice{}).
+		Where("id = ?", id).
+		Updates(map[string]interface{}{
+			"status":  "paid",
+			"paid_at": paidAt,
+		}).Error; err != nil {
+		log.Println("Error marking invoice as paid:", err)
+		return err
+	}
+	return nil
+}
+
+// FilterInvoicesByDateRange returns invoices within a date range
+func FilterInvoicesByDateRange(from, to string) ([]models.Invoice, error) {
+	var invoices []models.Invoice
+	if err := config.GormDB.Where("creation_date BETWEEN ? AND ?", from, to).Find(&invoices).Error; err != nil {
+		log.Println("Error filtering invoices by date range:", err)
+		return nil, err
+	}
+	return invoices, nil
+}

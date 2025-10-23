@@ -30,8 +30,8 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "invalid credentials", http.StatusUnauthorized)
 		return
 	}
-	// NOTE: passwords are stored in plaintext currently; for production, use bcrypt
-	if user.Password != req.Password {
+	// Use bcrypt to check password
+	if !utils.CheckPassword(req.Password, user.Password) {
 		http.Error(w, "invalid credentials", http.StatusUnauthorized)
 		return
 	}

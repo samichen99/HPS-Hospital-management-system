@@ -18,7 +18,7 @@ func NewRouter() *mux.Router {
 	api := router.PathPrefix("/api").Subrouter()
 	api.Use(middleware.AuthMiddleware)
 
-	 //  Only Admin can manage users
+	//  Only Admin can manage users
 	admin := api.PathPrefix("/admin").Subrouter()
 	admin.Use(middleware.RequireRole("admin"))
 	admin.HandleFunc("/users", handlers.GetAllUsersHandler).Methods("GET")
@@ -28,7 +28,6 @@ func NewRouter() *mux.Router {
 	doctor := api.PathPrefix("/doctor").Subrouter()
 	doctor.Use(middleware.RequireRole("doctor"))
 	doctor.HandleFunc("/records", handlers.CreateMedicalRecordHandler).Methods("POST")
-
 
 	// user routes
 	api.HandleFunc("/users", handlers.GetAllUsersHandler).Methods("GET")
@@ -99,7 +98,7 @@ func NewRouter() *mux.Router {
 	api.HandleFunc("/invoices/{id}", handlers.DeleteInvoiceHandler).Methods("DELETE")
 	api.HandleFunc("/invoices/{id}/paid", handlers.MarkInvoicePaidHandler).Methods("PATCH")
 	api.HandleFunc("/invoices/{id}", handlers.FilterInvoiceHandler).Methods("GET")
-	
+
 	// invoice filtering routes
 	api.HandleFunc("/invoices/patient/{patient_id}", handlers.GetInvoicesByPatientHandler).Methods("GET")
 	api.HandleFunc("/invoices/status/{status}", handlers.GetInvoicesByStatusHandler).Methods("GET")
@@ -114,7 +113,6 @@ func NewRouter() *mux.Router {
 	// Payment filtering
 	api.HandleFunc("/payments/invoice/{invoice_id}", handlers.GetPaymentsByInvoiceIDHandler).Methods("GET")
 
-	
 	// Health check endpoint
 	router.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte("API is up and running"))

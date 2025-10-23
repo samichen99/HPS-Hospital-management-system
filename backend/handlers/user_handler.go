@@ -5,9 +5,11 @@ import (
 	"fmt"
 	"net/http"
 	"strconv"
+
+	"github.com/gorilla/mux"
 	"github.com/samichen99/HAP-hospital-management-system/models"
 	"github.com/samichen99/HAP-hospital-management-system/repositories"
-	"github.com/gorilla/mux"
+	"github.com/samichen99/HAP-hospital-management-system/utils"
 )
 
 // CreateUser handler :
@@ -21,6 +23,14 @@ func CreateUserHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Invalid request body", http.StatusBadRequest)
 		return
 	}
+
+	// Hash password before saving
+	hashed, err := utils.HashPassword(user.Password)
+	if err != nil {
+		http.Error(w, "Failed to hash password", http.StatusInternalServerError)
+		return
+	}
+	user.Password = hashed
 
 	err = repositories.CreateUser(user)
 	if err != nil {
@@ -70,7 +80,7 @@ func UpdateUserHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	user.ID = id 
+	user.ID = id
 
 	err = repositories.UpdateUser(user)
 	if err != nil {
