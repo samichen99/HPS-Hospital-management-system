@@ -1,51 +1,44 @@
-import React, { createContext, useContext, useEffect, useMemo, useState } from "react";
-import jwtDecode from "jwt-decode";
+import { createContext, useState, useEffect } from "react";
+import api from "../services/apiClient";
 
-const AuthContext = createContext(null);
+export const AuthContext = createContext();
 
 export function AuthProvider({ children }) {
-  const [token, setToken] = useState(() => localStorage.getItem("token") || "");
-  const [user, setUser] = useState(() => {
-    const t = localStorage.getItem("token");
-    if (!t) return null;
-    try {
-      const decoded = jwtDecode(t);
-      return { id: decoded.user_id, role: decoded.role };
-    } catch {
-      return null;
-    }
-  });
+  const [user, setUser] = useState(null);
+  const [token, setToken] = useState(() => localStorage.getItem("authToken") || null);
+  const [loading, setLoading] = useState(false);
 
-  useEffect(() => {
-    if (token) {
-      localStorage.setItem("token", token);
-      try {
-        const decoded = jwtDecode(token);
-        setUser({ id: decoded.user_id, role: decoded.role });
-      } catch {
-        setUser(null);
-      }
-    } else {
-      localStorage.removeItem("token");
-      setUser(null);
-    }
+  useEffect(()=> {
+    if (token) localStorage.setItem("authToken", token);
+    else localStorage.removeItem("authToken");
+    setUser(null);
   }, [token]);
+  
+  const login = async (Credentials) => {
+    setLoading(true);
+    try {
+      const res = await api.post("/auth/login", Credentials);
+      const { token: t, user: u} = res.data;
+      if (!t ) throw new Error("No token received");
 
-  const value = useMemo(
-    () => ({
-      token,
-      user,
-      isAuthenticated: !!user,
-      role: user?.role || null,
-      login: (t) => setToken(t),
-      logout: () => setToken(""),
-    }),
-    [token, user]
+      setToken(t);
+      setUser(u);
+      return { ok: true};
+    } catch (error) { const message = err.responce?.data?.message || error.message || "Login failed";
+      return { ok: false, message };
+    } finally {
+      setLoading(false);
+
+    }
+  };
+  const logout = () => {
+    setToken(null);
+    setUser(null);
+  };
+
+  return (
+    <AuthContext.Provider value={{ user, token, loading, login, logout }}>
+      {children}
+    </AuthContext.Provider>
   );
-
-  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
-}
-
-export function useAuth() {
-  return useContext(AuthContext);
 }

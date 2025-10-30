@@ -1,18 +1,13 @@
-import React from "react";
-import { Navigate, useLocation } from "react-router-dom";
-import { useAuth } from "../context/AuthContext.jsx";
+// src/components/ProtectedRoute.jsx
+import { useContext } from "react";
+import { Navigate } from "react-router-dom";
+import { AuthContext } from "../context/AuthContext";
 
-export default function ProtectedRoute({ children, roles }) {
-  const { isAuthenticated, role } = useAuth();
-  const location = useLocation();
+export default function ProtectedRoute({ children }) {
+  const { token, loading } = useContext(AuthContext);
 
-  if (!isAuthenticated) {
-    return <Navigate to="/login" replace state={{ from: location }} />;
-  }
-
-  if (roles && roles.length > 0 && !roles.includes(role)) {
-    return <div className="alert alert-danger">Access denied.</div>;
-  }
+  if (loading) return <div>Loading...</div>;
+  if (!token) return <Navigate to="/login" replace />;
 
   return children;
 }

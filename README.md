@@ -21,7 +21,7 @@ An enterprise-grade, full-stack Hospital Management System built with **React.js
 | Layer      | Technology           |
 |------------|----------------------|
 | Frontend   | React.js, Bootstrap, React Router |
-| Backend    | Go (Golang), mux        |
+| Backend    | Go (Golang), Mux Router, GORM        |
 | Database   | PostgreSQL, Kafka            |
 | Auth       | JWT (JSON Web Tokens) |
 | Tools      | Docker, GitHub, Postman |
