@@ -8,29 +8,30 @@ export function AuthProvider({ children }) {
   const [token, setToken] = useState(() => localStorage.getItem("authToken") || null);
   const [loading, setLoading] = useState(false);
 
-  useEffect(()=> {
+  useEffect(() => {
     if (token) localStorage.setItem("authToken", token);
     else localStorage.removeItem("authToken");
-    setUser(null);
   }, [token]);
-  
-  const login = async (Credentials) => {
+
+  const login = async (credentials) => {
     setLoading(true);
     try {
-      const res = await api.post("/auth/login", Credentials);
-      const { token: t, user: u} = res.data;
-      if (!t ) throw new Error("No token received");
+      const res = await api.post("/auth/login", credentials);
+      const { token: t, user: u } = res.data;
+
+      if (!t) throw new Error("No token received");
 
       setToken(t);
       setUser(u);
-      return { ok: true};
-    } catch (error) { const message = err.responce?.data?.message || error.message || "Login failed";
+      return { ok: true };
+    } catch (error) {
+      const message = error.response?.data?.message || error.message || "Login failed";
       return { ok: false, message };
     } finally {
       setLoading(false);
-
     }
   };
+
   const logout = () => {
     setToken(null);
     setUser(null);

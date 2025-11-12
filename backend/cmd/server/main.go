@@ -8,6 +8,7 @@ import (
 	"os/signal"
 	"time"
 
+	"github.com/rs/cors"
 	"github.com/samichen99/HAP-hospital-management-system/api"
 	"github.com/samichen99/HAP-hospital-management-system/config"
 	"github.com/samichen99/HAP-hospital-management-system/utils"
@@ -45,11 +46,17 @@ func main() {
 	// Init Router
 	router := api.NewRouter()
 
-	// Create HTTP server instance
-	srv := &http.Server{
-		Addr:    ":8080",
-		Handler: router,
-	}
+	c := cors.New(cors.Options{
+    AllowedOrigins:   []string{"http://localhost:5173"},
+    AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
+    AllowedHeaders:   []string{"Authorization", "Content-Type"},
+    AllowCredentials: true,
+})
+
+srv := &http.Server{
+    Addr:    ":8080",
+    Handler: c.Handler(router),
+}
 
 	// Start Kafka consumers
 	utils.StartAppointmentConsumers(topics, "appointment-consumer-group")

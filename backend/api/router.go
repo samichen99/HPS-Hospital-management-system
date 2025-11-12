@@ -12,6 +12,10 @@ func NewRouter() *mux.Router {
 
 	router := mux.NewRouter()
 
+	router.Methods("OPTIONS").HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+    w.WriteHeader(http.StatusOK)})
+
+
 	// Public auth route
 	router.HandleFunc("/auth/login", handlers.LoginHandler).Methods("POST")
 
