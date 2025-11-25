@@ -33,9 +33,20 @@ export function AuthProvider({ children }) {
   };
 
   const logout = () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
     setToken(null);
     setUser(null);
   };
+
+  useEffect(() => {
+    const handleStorage = () => {
+      const storedToken = localStorage.getItem("token");
+      if (!storedToken) logout();
+    };
+    window.addEventListener("storage", handleStorage);
+    return () => window.removeEventListener("storage", handleStorage);
+  }, []);
 
   return (
     <AuthContext.Provider value={{ user, token, loading, login, logout }}>

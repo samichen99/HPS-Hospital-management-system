@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useContext } from "react";
+import { useContext, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
 
@@ -8,9 +8,15 @@ console.log("Sending request to:", import.meta.env.VITE_API_BASE_URL + "/auth/lo
 function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const {login, loading} = useContext(AuthContext);
+  const {login, loading, token} = useContext(AuthContext);
   const [error, setError] = useState("");
   const navigate = useNavigate();
+
+  useEffect(()=> {
+    if (token){
+      navigate("/dashboard");
+    }
+  }, [token, navigate]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
