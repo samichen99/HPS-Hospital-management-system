@@ -1,28 +1,49 @@
 import { createContext, useState, useEffect } from "react";
 import api from "../services/apiClient";
+import {jwtDecode} from "jwt-decode";
 
 export const AuthContext = createContext();
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
-  const [token, setToken] = useState(() => localStorage.getItem("authToken") || null);
+  const [token, setToken] = useState(() => localStorage.getItem("token") || null);
   const [loading, setLoading] = useState(false);
 
+  const decodeToken = (t) => {
+    try {
+      return jwtDecode(t);
+    } catch {
+      return null;
+    }
+  };
+
   useEffect(() => {
-    if (token) localStorage.setItem("authToken", token);
-    else localStorage.removeItem("authToken");
+    if (!token) return;
+
+    const decoded = decodeToken(token);
+
+    if (!decoded || decoded.exp * 1000 < Date.now()) {
+      logout();
+    } else {
+      setUser(decoded);
+    }
   }, [token]);
 
+  
   const login = async (credentials) => {
     setLoading(true);
     try {
       const res = await api.post("/auth/login", credentials);
-      const { token: t, user: u } = res.data;
+      const { token: newToken } = res.data;
 
-      if (!t) throw new Error("No token received");
+      if (!newToken) throw new Error("No token received");
 
-      setToken(t);
-      setUser(u);
+      const decoded = decodeToken(newToken);
+
+      setToken(newToken);
+      setUser(decoded);
+      localStorage.setItem("token", newToken);
+
       return { ok: true };
     } catch (error) {
       const message = error.response?.data?.message || error.message || "Login failed";
@@ -32,17 +53,19 @@ export function AuthProvider({ children }) {
     }
   };
 
+ 
   const logout = () => {
     localStorage.removeItem("token");
-    localStorage.removeItem("user");
     setToken(null);
     setUser(null);
   };
 
+
   useEffect(() => {
     const handleStorage = () => {
-      const storedToken = localStorage.getItem("token");
-      if (!storedToken) logout();
+      if (!localStorage.getItem("token")) {
+        logout();
+      }
     };
     window.addEventListener("storage", handleStorage);
     return () => window.removeEventListener("storage", handleStorage);
@@ -54,3 +77,5 @@ export function AuthProvider({ children }) {
     </AuthContext.Provider>
   );
 }
+
+export default AuthProvider;

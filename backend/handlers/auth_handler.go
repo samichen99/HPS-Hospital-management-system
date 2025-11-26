@@ -18,7 +18,7 @@ type LoginResponse struct {
 	Token string `json:"token"`
 }
 
-// LoginHandler authenticates a user and returns a JWT
+
 func LoginHandler(w http.ResponseWriter, r *http.Request) {
 	var req LoginRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
@@ -35,7 +35,7 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "invalid credentials", http.StatusUnauthorized)
 		return
 	}
-	token, err := utils.GenerateJWT(user.ID, user.Role, 24*time.Hour)
+	token, err := utils.GenerateJWT(user.ID, user.Role, time.Hour)
 	if err != nil {
 		http.Error(w, "failed to generate token", http.StatusInternalServerError)
 		return

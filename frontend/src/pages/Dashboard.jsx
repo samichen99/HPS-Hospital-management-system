@@ -6,19 +6,15 @@ function Dashboard() {
   const { user, logout } = useContext(AuthContext);
   const navigate = useNavigate();
 
-  const handleLogout = () => {
-    logout();
-    navigate("/login");
-  };
 
   return (
-    <div class="container mt-4">
-      <div class="d-flex justify-content-between align-items-center mb-4">
+    <div className="container mt-4">
+      <div className="d-flex justify-content-between align-items-center mb-4">
         <h2>Dashboard</h2>
       </div>  
       <p>Welcome back, <stong>{user?.username || user?.email}</stong>!</p>
       
-            {/* Summary Cards */}
+          {/* Summary Cards */}
       <div className="row">
         <div className="col-md-3 mb-3">
           <div className="card text-center shadow border-1">
@@ -61,12 +57,12 @@ function Dashboard() {
         </div>
       </div>
       {/* overview table */}
-      <div class="card shadow-sm mt-4"></div>
-        <div class="card-header bg-light">
-          <h5 class="mb-0">Recent activities</h5>
+      <div className="card shadow-sm mt-4"></div>
+        <div className="card-header bg-light">
+          <h5 className="mb-0">Recent activities</h5>
         </div>
-        <div class="card-body">
-          <table class="table table-hover">
+        <div className="card-body">
+          <table className="table table-hover">
             <thead>
               <tr>
                 <th>Type</th>

@@ -11,14 +11,13 @@ import (
 )
 
 var (
-	DB      *sql.DB   // Normal SQL DB 
-	GormDB  *gorm.DB  // GORM DB
+	DB      *sql.DB   
+	GormDB  *gorm.DB  
 )
 
 func InitDB() {
 	dsn := "host=localhost user=postgres password=admin dbname=hospital_db port=5432 sslmode=disable"
 
-	// connect standard database/sql
 	var err error
 	DB, err = sql.Open("postgres", dsn)
 	if err != nil {
@@ -29,7 +28,6 @@ func InitDB() {
 	}
 	log.Println("Connected to PostgreSQL using database/sql")
 
-	// connect gorm
 	GormDB, err = gorm.Open(postgres.Open(dsn), &gorm.Config{})
 	if err != nil {
 		log.Fatalf("Failed to connect to GORM DB: %v", err)

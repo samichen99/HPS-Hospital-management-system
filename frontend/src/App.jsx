@@ -14,10 +14,10 @@ export default function App() {
     <AuthProvider>
       <BrowserRouter>
         <Routes>
-          // Public route
+          {/* Public route */}
           <Route path="/login" element={<Login />} />
 
-          // Protected routes
+          {/* Protected routes */}
           <Route
             element={
               <ProtectedRoute>
@@ -31,7 +31,8 @@ export default function App() {
             <Route path="/doctors" element={<Doctors />} />
           </Route>
 
-          // Fallback route
+          {/* Default route: redirect to login */}
+          <Route path="/" element={<Login />} />
           <Route path="*" element={<Login />} />
         </Routes>
       </BrowserRouter>
