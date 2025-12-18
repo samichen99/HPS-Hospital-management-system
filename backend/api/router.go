@@ -22,6 +22,11 @@ func NewRouter() *mux.Router {
 	api := router.PathPrefix("/api").Subrouter()
 	api.Use(middleware.AuthMiddleware)
 
+	api.Methods("OPTIONS").HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	w.WriteHeader(http.StatusOK)
+	})
+
+
 	//  Only Admin can manage users
 	admin := api.PathPrefix("/admin").Subrouter()
 	admin.Use(middleware.RequireRole("admin"))
@@ -41,12 +46,13 @@ func NewRouter() *mux.Router {
 	api.HandleFunc("/users/{id}", handlers.DeleteUserHandler).Methods("DELETE")
 
 	// patient routes
+	api.HandleFunc("/patients/search", handlers.SearchPatientsHandler).Methods("GET")
 	api.HandleFunc("/patients", handlers.GetAllPatientsHandler).Methods("GET")
 	api.HandleFunc("/patients/{id}", handlers.GetPatientByIDHandler).Methods("GET")
 	api.HandleFunc("/patients", handlers.CreatePatientHandler).Methods("POST")
 	api.HandleFunc("/patients/{id}", handlers.UpdatePatientHandler).Methods("PUT")
 	api.HandleFunc("/patients/{id}", handlers.DeletePatientHandler).Methods("DELETE")
-	api.HandleFunc("/patients/search", handlers.SearchPatientsHandler).Methods("GET")
+	
 
 	// doctor routes
 	api.HandleFunc("/doctors", handlers.GetAllDoctorsHandler).Methods("GET")

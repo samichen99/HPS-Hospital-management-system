@@ -12,6 +12,15 @@ import (
 	"github.com/samichen99/HAP-hospital-management-system/utils"
 )
 
+func isValidRole (role string) bool {
+	switch role {
+	case "admin", "doctor", "staff":
+		return true
+	default :
+		return false
+	}
+}
+
 // CreateUser handler :
 
 func CreateUserHandler(w http.ResponseWriter, r *http.Request) {
@@ -35,6 +44,11 @@ func CreateUserHandler(w http.ResponseWriter, r *http.Request) {
 	err = repositories.CreateUser(user)
 	if err != nil {
 		http.Error(w, "Could not create user", http.StatusInternalServerError)
+		return
+	}
+
+	if !isValidRole(user.Role){
+		http.Error(w, "unauthorized role", http.StatusBadRequest)
 		return
 	}
 
@@ -85,6 +99,11 @@ func UpdateUserHandler(w http.ResponseWriter, r *http.Request) {
 	err = repositories.UpdateUser(user)
 	if err != nil {
 		http.Error(w, "Error updating user", http.StatusInternalServerError)
+		return
+	}
+
+	if !isValidRole(user.Role){
+		http.Error(w, "unauthorized role", http.StatusBadRequest)
 		return
 	}
 

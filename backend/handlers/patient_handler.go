@@ -10,6 +10,8 @@ import (
 	"github.com/samichen99/HAP-hospital-management-system/repositories"
 )
 
+
+
 // CreatePatient handler :
 func CreatePatientHandler(w http.ResponseWriter, r *http.Request) {
 	var patient models.Patient
@@ -23,6 +25,7 @@ func CreatePatientHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Failed to create patient", http.StatusInternalServerError)
 		return
 	}
+
 
 	w.WriteHeader(http.StatusCreated)
 	json.NewEncoder(w).Encode(patient)

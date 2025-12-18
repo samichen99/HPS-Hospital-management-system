@@ -3,7 +3,7 @@ import {Link} from "react-router-dom";
 
 function Sidebar(){
     return(
-        <div className="sidebar sidebar-sticky flex-column p-3" style={{width: '250px', height: '100vh', backgroundColor: '#9bccfaff'}}>
+        <div className="sidebar sidebar-sticky flex-column p-3" style={{width: '250px', height: '100vh', backgroundColor: '#c4d5e6ff'}}>
            
             <ul className="nav nav-pills flex-column mb-auto">
                 <li className="nav-item mb-2">
