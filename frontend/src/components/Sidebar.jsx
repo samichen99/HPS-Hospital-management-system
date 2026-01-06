@@ -21,6 +21,18 @@ function Sidebar(){
                 <li className="nav-item mb-2">
                     <Link to="/appointments" className="nav-link text-dark">Appointments</Link>
                     </li>
+                <li className="nav-item mb-2">
+                    <Link to="/medical-records" className="nav-link text-dark">Medical Records</Link>
+                    </li>
+                <li className="nav-item mb-2">
+                    <Link to="/files" className="nav-link text-dark">Files</Link>
+                    </li>
+                <li className="nav-item mb-2">
+                    <Link to="/invoices" className="nav-link text-dark">Invoices</Link>
+                    </li>
+                <li className="nav-item mb-2">
+                    <Link to="/payments" className="nav-link text-dark">Payments</Link>
+                    </li>
                 
             </ul>
         </div>

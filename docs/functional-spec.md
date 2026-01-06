@@ -1,4 +1,4 @@
-# Functional Specification - Hospital Management System HPA
+# Functional Specification - Hospital Management System HAP
 
 ## Objective
 To develop a web-based Hospital Management System that facilitates:

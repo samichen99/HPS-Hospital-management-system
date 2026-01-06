@@ -7,7 +7,10 @@ import Dashboard from "./pages/Dashboard";
 import Users from "./pages/Users";
 import Patients from "./pages/Patients";
 import Doctors from "./pages/Doctors";
+import Appointments from "./pages/Appointments";
 import MainLayout from "./layouts/MainLayout";
+import Medical_records from "./pages/Medical_records";
+
 
 export default function App() {
   return (
@@ -29,6 +32,8 @@ export default function App() {
             <Route path="/users" element={<Users />} />
             <Route path="/patients" element={<Patients />} />
             <Route path="/doctors" element={<Doctors />} />
+            <Route path="/appointments" element={<Appointments />} />
+            <Route path="/medical-records" element={<Medical_records />} />
           </Route>
 
           {/* Default route: redirect to login */}
