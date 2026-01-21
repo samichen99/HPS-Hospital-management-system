@@ -1,0 +1,160 @@
+/* --- Global Variables & Reset --- */
+:root {
+    --apple-blue: #007aff;
+    --apple-bg: #ecececff; 
+    --apple-text: #1d1d1f;
+    --apple-secondary-text: #86868b;
+    --glass-bg: rgba(255, 255, 255, 0.7);
+    --sidebar-active: rgba(0, 122, 255, 0.1);
+    font-size: 15px; 
+}
+
+body {
+    background-color: var(--apple-bg);
+    color: var(--apple-text);
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", sans-serif;
+    margin: 0;
+    font-size: 3rem;
+    -webkit-font-smoothing: antialiased;
+    line-height: 1.5;
+}
+
+/* --- Sidebar Styling --- */
+.sidebar-macos {
+    width: 260px;
+    min-width: 60px;
+    /* Translucent light grey with high blur for "vibrancy" effect */
+    background-color: rgba(235, 235, 235, 0.75); 
+    backdrop-filter: blur(40px) saturate(150%);
+    -webkit-backdrop-filter: blur(40px) saturate(150%);
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    border-radius: 20px;
+    height: 75vh;
+    padding: 10px 8px; 
+    display: flex;
+    flex-direction: column;
+    position: sticky;
+    top: 30px;
+    margin: 4px;
+    transition: width 0.9s cubic-bezier(0.25, 1, 0.5, 1), padding 0.9s cubic-bezier(0.25, 1, 0.5, 1);
+    overflow: hidden;
+    z-index: 100;
+}
+
+/* Neutralize sidebar padding when collapsed to allow true centering */
+.sidebar-macos.collapsed {
+    width: 60px;
+    padding: 12px 4px; 
+}
+
+.sidebar-macos .nav-link {
+    text-decoration: none;
+    font-size: 15px; /* Refined smaller text size per macOS official style */
+    color: rgba(29, 29, 31, 0.85); 
+    padding: 6px 10px; 
+    border-radius: 6px; 
+    display: flex;
+    align-items: center;
+    margin-bottom: 2px;
+    position: relative;
+    white-space: nowrap;
+    height: 32px; /* Standard macOS Sidebar compact row height */
+    transition: background-color 0.2s ease, padding 0.4s cubic-bezier(0.25, 1, 0.5, 1);
+}
+
+/* Center icons perfectly when sidebar is collapsed */
+.sidebar-macos.collapsed .nav-link {
+    justify-content: center; 
+    padding: 6px 0; 
+}
+
+/* Remove image margins in collapsed state */
+.sidebar-macos.collapsed .nav-link img {
+    margin-right: 0 !important;
+    margin-left: 0 !important;
+}
+
+.sidebar-macos .nav-link.active {
+    background-color: rgba(0, 0, 0, 0.06) !important;
+    color: var(--apple-blue) !important;
+    font-weight: 500;
+}
+
+.sidebar-macos .nav-link:hover:not(.active) {
+    background-color: rgba(0, 0, 0, 0.04);
+}
+
+/* Hide labels in collapsed state to prevent layout shift */
+.sidebar-macos.collapsed .nav-label {
+    display: none;
+}
+
+/* --- Custom macOS-style Buttons from Input Photo --- */
+.btn-macos {
+    padding: 4px 16px;
+    font-size: 13px;
+    font-weight: 400;
+    border-radius: 6px;
+    border: 0.5px solid rgba(0, 0, 0, 0.15);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s cubic-bezier(0.25, 1, 0.5, 1);
+    cursor: pointer;
+    outline: none;
+}
+
+.btn-macos-primary {
+    background: linear-gradient(180deg, #4d94ff 0%, #007aff 100%);
+    color: white;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.btn-macos-primary:focus {
+    /* Blue focus ring animation from image */
+    box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.4);
+    border-color: #007aff;
+}
+
+.btn-macos-secondary {
+    background: linear-gradient(180deg, #7a7a7a 0%, #636366 100%);
+    color: white;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.btn-macos-secondary:focus {
+    /* Grey focus ring animation from image */
+    box-shadow: 0 0 0 3px rgba(150, 150, 150, 0.4);
+    border-color: #8e8e93;
+}
+
+.btn-macos:active {
+    transform: scale(0.97);
+    filter: brightness(0.9);
+}
+
+
+
+/* --- Form Element Resets --- */
+.form-control, .form-select {
+    font-size: 0.9rem !important;
+    border-radius: 6px !important;
+    border: 0.5px solid rgba(0, 0, 0, 0.1) !important;
+    background-color: rgba(255, 255, 255, 0.8) !important;
+}
+
+/* --- Glassmorphic Cards --- */
+.glass-card {
+    background-color: var(--glass-bg);
+    backdrop-filter: blur(20px) saturate(180%);
+    border-radius: 22px;
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    padding: 20px;
+}
+
+/* --- Table Styles --- */
+.table-macos {
+    font-size: 0.95rem;
+    border-collapse: separate;
+    width: 100%;
+}

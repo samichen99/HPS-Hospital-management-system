@@ -10,6 +10,9 @@ import Doctors from "./pages/Doctors";
 import Appointments from "./pages/Appointments";
 import MainLayout from "./layouts/MainLayout";
 import Medical_records from "./pages/Medical_records";
+import Files from "./pages/Files";
+import Invoices from "./pages/Invoices";
+import Payments from "./pages/Payments";
 
 
 export default function App() {
@@ -34,6 +37,9 @@ export default function App() {
             <Route path="/doctors" element={<Doctors />} />
             <Route path="/appointments" element={<Appointments />} />
             <Route path="/medical-records" element={<Medical_records />} />
+            <Route path="/files" element={<Files />} />
+            <Route path="/invoices" element={<Invoices />} />
+            <Route path="/payments" element={<Payments />} />
           </Route>
 
           {/* Default route: redirect to login */}
