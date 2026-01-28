@@ -1,13 +1,14 @@
 import { useEffect, useState, useContext } from "react";
 import { AuthContext } from "../context/AuthContext";
 import api from "../services/apiClient";
-import { Calendar, Pencil, Trash2, X, CheckCircle, Clock } from "lucide-react";
+import { Calendar, Pencil, Trash2, X, CheckCircle, Search } from "lucide-react";
 
 function Appointments() {
   const { token, logout } = useContext(AuthContext);
 
   const [appointments, setAppointments] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [search, setSearch] = useState("");
   const [showForm, setShowForm] = useState(false);
 
   const [form, setForm] = useState({
@@ -37,6 +38,17 @@ function Appointments() {
   useEffect(() => {
     if (token) fetchAppointments();
   }, [token]);
+
+  // Dynamic filtering logic for the appointment list
+  const filteredAppointments = appointments.filter((a) => {
+    const term = search.toLowerCase();
+    return (
+      a.patient_id.toString().includes(term) ||
+      a.doctor_id.toString().includes(term) ||
+      (a.notes && a.notes.toLowerCase().includes(term)) ||
+      a.status.toLowerCase().includes(term)
+    );
+  });
 
   const resetForm = () => {
     setForm({
@@ -129,9 +141,21 @@ function Appointments() {
           <p style={{ color: "#86868b", fontSize: "14px", margin: "2px 0 0 0" }}>Schedule and monitor patient visits</p>
         </div>
         
-        <button className="btn-macos btn-macos-primary" onClick={openCreateForm}>
-          <Calendar size={14} style={{ marginRight: "6px" }} /> New Appointment
-        </button>
+        <div className="d-flex gap-2">
+            <div style={{ position: 'relative' }}>
+                <Search size={14} style={{ position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)', color: '#86868b' }} />
+                <input
+                className="form-control"
+                style={{ paddingLeft: '32px', width: '220px', fontSize: "13px" }}
+                placeholder="Search visits..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                />
+            </div>
+            <button className="btn-macos btn-macos-primary" onClick={openCreateForm}>
+              <Calendar size={14} style={{ marginRight: "6px" }} /> New Appointment
+            </button>
+        </div>
       </header>
 
       {showForm && (
@@ -204,8 +228,8 @@ function Appointments() {
               </tr>
             </thead>
             <tbody style={{ fontSize: "13px" }}>
-              {appointments.length > 0 ? (
-                appointments.map((a) => {
+              {filteredAppointments.length > 0 ? (
+                filteredAppointments.map((a) => {
                   const statusStyle = getStatusStyle(a.status);
                   return (
                     <tr key={a.id} style={{ borderTop: "1px solid rgba(0, 0, 0, 0.02)" }}>
@@ -244,7 +268,9 @@ function Appointments() {
                 })
               ) : (
                 <tr>
-                  <td colSpan="6" className="text-center py-5" style={{ color: "#86868b" }}>No scheduled appointments found.</td>
+                  <td colSpan="6" className="text-center py-5" style={{ color: "#86868b" }}>
+                    {search ? `No results for "${search}"` : "No scheduled appointments found."}
+                  </td>
                 </tr>
               )}
             </tbody>

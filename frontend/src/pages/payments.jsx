@@ -1,7 +1,7 @@
 import { useEffect, useState, useContext } from "react";
 import { AuthContext } from "../context/AuthContext";
 import api from "../services/apiClient";
-import { CreditCard, Wallet, Landmark, Plus, X, Receipt, History } from "lucide-react";
+import { CreditCard, Wallet, Landmark, Plus, X, Receipt, History, Search } from "lucide-react";
 
 function Payments() {
   const { token, logout, user } = useContext(AuthContext);
@@ -10,6 +10,7 @@ function Payments() {
   const [invoices, setInvoices] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
+  const [search, setSearch] = useState("");
 
   const [form, setForm] = useState({
     invoiceId: "",
@@ -44,6 +45,17 @@ function Payments() {
       fetchInvoices();
     }
   }, [token]);
+
+  // Real-time filtering for the transaction history
+  const filteredPayments = payments.filter((p) => {
+    const term = search.toLowerCase();
+    const payId = (p.id?.toString() || "").toLowerCase();
+    const invId = (p.invoice_id?.toString() || "").toLowerCase();
+    const memo = (p.notes || "").toLowerCase();
+    const method = (p.method || "").toLowerCase();
+
+    return payId.includes(term) || invId.includes(term) || memo.includes(term) || method.includes(term);
+  });
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -94,9 +106,21 @@ function Payments() {
           <p style={{ color: "#86868b", fontSize: "14px", margin: "2px 0 0 0" }}>Process payments and audit inbound revenue</p>
         </div>
         
-        <button className="btn-macos btn-macos-primary" onClick={() => setShowForm(true)}>
-          <Plus size={14} style={{ marginRight: "6px" }} /> Log Payment
-        </button>
+        <div className="d-flex gap-2">
+            <div style={{ position: 'relative' }}>
+                <Search size={14} style={{ position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)', color: '#86868b' }} />
+                <input
+                className="form-control"
+                style={{ paddingLeft: '32px', width: '220px', fontSize: "13px" }}
+                placeholder="Search transactions..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                />
+            </div>
+            <button className="btn-macos btn-macos-primary" onClick={() => setShowForm(true)}>
+              <Plus size={14} style={{ marginRight: "6px" }} /> Log Payment
+            </button>
+        </div>
       </header>
 
       {showForm && (
@@ -166,8 +190,8 @@ function Payments() {
               </tr>
             </thead>
             <tbody style={{ fontSize: "12px" }}>
-              {payments.length > 0 ? (
-                payments.map((p) => (
+              {filteredPayments.length > 0 ? (
+                filteredPayments.map((p) => (
                   <tr key={p.id} style={{ borderTop: "1px solid rgba(0, 0, 0, 0.02)" }}>
                     <td className="px-4 py-3" style={{ color: "#86868b", fontFamily: "monospace" }}>#{p.id.toString().padStart(5, '0')}</td>
                     <td className="py-3"><span style={{ color: "#007aff", fontWeight: "600" }}>#{p.invoice_id.toString().padStart(4, '0')}</span></td>
@@ -190,7 +214,7 @@ function Payments() {
               ) : (
                 <tr>
                   <td colSpan="6" className="text-center py-5" style={{ color: "#86868b" }}>
-                    No payment history recorded in the current period.
+                    {search ? `No payments match "${search}"` : "No payment history recorded in the current period."}
                   </td>
                 </tr>
               )}

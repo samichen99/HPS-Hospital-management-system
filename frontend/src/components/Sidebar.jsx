@@ -29,12 +29,12 @@ function Sidebar() {
 
     return (
         <aside className={`sidebar-macos ${isCollapsed ? 'collapsed' : ''}`}>
-            {/* macOS Traffic Lights - Only visible when expanded for authentic feel */}
+            {/* macOS Traffic Lights*/}
             {!isCollapsed && (
                 <div style={{ display: 'flex', gap: '8px', padding: '16px 16px 8px' }}>
-                    <div style={{ width: '12px', height: '12px', borderRadius: '50%', backgroundColor: '#ff5f57', border: '0.5px solid rgba(0,0,0,0.1)' }}></div>
-                    <div style={{ width: '12px', height: '12px', borderRadius: '50%', backgroundColor: '#febc2e', border: '0.5px solid rgba(0,0,0,0.1)' }}></div>
-                    <div style={{ width: '12px', height: '12px', borderRadius: '50%', backgroundColor: '#28c840', border: '0.5px solid rgba(0,0,0,0.1)' }}></div>
+                    <div style={{ width: '14px', height: '14px', borderRadius: '50%', backgroundColor: '#ff5f57', border: '0.5px solid rgba(0,0,0,0.1)' }}></div>
+                    <div style={{ width: '14px', height: '14px', borderRadius: '50%', backgroundColor: '#febc2e', border: '0.5px solid rgba(0,0,0,0.1)' }}></div>
+                    <div style={{ width: '14px', height: '14px', borderRadius: '50%', backgroundColor: '#28c840', border: '0.5px solid rgba(0,0,0,0.1)' }}></div>
                 </div>
             )}
 
@@ -76,7 +76,7 @@ function Sidebar() {
                         key={item.to}
                         to={item.to} 
                         className={({ isActive }) => isActive ? "nav-link active" : "nav-link"}
-                        style={{ height: '30px' }} // Standard macOS Sidebar row height
+                        style={{ height: '30px' }} // idebar row height
                     >
                         {({ isActive }) => (
                             <>
@@ -84,10 +84,10 @@ function Sidebar() {
                                     src={item.icon} 
                                     alt={item.label}
                                     style={{ 
-                                        width: "18px", // Reduced to match official proportions
-                                        height: "18px", 
+                                        width: "22px", //icon size
+                                        height: "22px", 
                                         objectFit: "contain",
-                                        marginRight: isCollapsed ? "0" : "10px",
+                                        marginRight: isCollapsed ? "0" : "7px",
                                         transition: "all 0.3s cubic-bezier(0.25, 1, 0.5, 1)",
                                         filter: isActive 
                                             ? "invert(31%) sepia(94%) saturate(4156%) hue-rotate(211deg) brightness(101%) contrast(105%)" 
@@ -102,9 +102,10 @@ function Sidebar() {
                                 />
                                 {!isCollapsed && (
                                     <span className="nav-label" style={{ 
-                                        fontSize: '13px', // Smaller, cleaner text per your request
-                                        fontWeight: isActive ? '500' : '400',
-                                        color: isActive ? "var(--apple-blue)" : "rgba(29, 29, 31, 0.8)"
+                                        fontSize: '13px', // text size
+                                        fontWeight: isActive ? '545' : '5',
+                                        color: isActive ? "var(--apple-text)" : "rgb(29, 29, 31)",
+                                        letterSpacing: '0.5px'
                                     }}>
                                         {item.label}
                                     </span>

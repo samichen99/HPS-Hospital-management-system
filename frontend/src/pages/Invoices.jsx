@@ -10,6 +10,7 @@ function Invoices() {
   const [patients, setPatients] = useState([]);
   const [appointments, setAppointments] = useState([]);
   const [showForm, setShowForm] = useState(false);
+  const [search, setSearch] = useState("");
 
   const [loading, setLoading] = useState(true);
   const [editingId, setEditingId] = useState(null);
@@ -56,6 +57,22 @@ function Invoices() {
       fetchAppointments();
     }
   }, [token]);
+
+  const getPatientName = (id) => patients.find((p) => p.id === id)?.fullName || "—";
+
+  // Dynamic search filtering for the ledger
+  const filteredInvoices = invoices.filter((inv) => {
+    const term = search.toLowerCase();
+    const patientName = getPatientName(inv.patient_id).toLowerCase();
+    const status = (inv.status || "").toLowerCase();
+    const invId = inv.id.toString().toLowerCase();
+
+    return (
+      patientName.includes(term) ||
+      status.includes(term) ||
+      invId.includes(term)
+    );
+  });
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -121,8 +138,6 @@ function Invoices() {
     });
   };
 
-  const getPatientName = (id) => patients.find((p) => p.id === id)?.fullName || "—";
-
   if (loading) return <div style={{ padding: "40px", color: "#86868b", fontSize: "13px" }}>Loading financial data...</div>;
 
   return (
@@ -133,11 +148,23 @@ function Invoices() {
           <p style={{ color: "#86868b", fontSize: "14px", margin: "2px 0 0 0" }}>Manage patient accounts and transaction history</p>
         </div>
         
-        {(user.role === "admin" || user.role === "doctor") && (
-          <button className="btn-macos btn-macos-primary" onClick={() => { resetForm(); setShowForm(true); }}>
-            <Receipt size={14} style={{ marginRight: "6px" }} /> Create New Invoice
-          </button>
-        )}
+        <div className="d-flex gap-2">
+            <div style={{ position: 'relative' }}>
+                <Search size={14} style={{ position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)', color: '#86868b' }} />
+                <input
+                className="form-control"
+                style={{ paddingLeft: '32px', width: '220px', fontSize: "13px" }}
+                placeholder="Search ledger..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                />
+            </div>
+            {(user.role === "admin" || user.role === "doctor") && (
+              <button className="btn-macos btn-macos-primary" onClick={() => { resetForm(); setShowForm(true); }}>
+                <Receipt size={14} style={{ marginRight: "6px" }} /> Create New Invoice
+              </button>
+            )}
+        </div>
       </header>
 
       {showForm && (
@@ -211,8 +238,8 @@ function Invoices() {
               </tr>
             </thead>
             <tbody style={{ fontSize: "12px" }}>
-              {invoices.length > 0 ? (
-                invoices.map((inv) => (
+              {filteredInvoices.length > 0 ? (
+                filteredInvoices.map((inv) => (
                   <tr key={inv.id} style={{ borderTop: "1px solid rgba(0, 0, 0, 0.02)" }}>
                     <td className="px-4 py-3" style={{ color: "#86868b", fontFamily: "monospace" }}>#{inv.id.toString().padStart(4, '0')}</td>
                     <td className="py-3" style={{ fontWeight: "600", color: "#1d1d1f" }}>{getPatientName(inv.patient_id)}</td>
@@ -249,7 +276,7 @@ function Invoices() {
               ) : (
                 <tr>
                   <td colSpan="7" className="text-center py-5" style={{ color: "#86868b" }}>
-                    No financial records found in the ledger.
+                    {search ? `No invoices found matching "${search}"` : "No financial records found in the ledger."}
                   </td>
                 </tr>
               )}

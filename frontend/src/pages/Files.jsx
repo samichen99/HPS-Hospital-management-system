@@ -1,7 +1,7 @@
 import { useEffect, useState, useContext } from "react";
 import { AuthContext } from "../context/AuthContext";
 import api from "../services/apiClient";
-import { Upload, Trash2, X, FileText, Download, HardDrive } from "lucide-react";
+import { Upload, Trash2, X, FileText, Download, HardDrive, Search } from "lucide-react";
 
 function Files() {
   const { token, logout } = useContext(AuthContext);
@@ -10,6 +10,7 @@ function Files() {
   const [patients, setPatients] = useState([]);
   const [doctors, setDoctors] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [search, setSearch] = useState("");
   const [showForm, setShowForm] = useState(false);
 
   const [form, setForm] = useState({
@@ -24,7 +25,7 @@ function Files() {
       const res = await api.get("/api/files", {
         headers: { Authorization: `Bearer ${token}` },
       });
-      setFiles(res.data);
+      setFiles(Array.isArray(res.data) ? res.data : []);
     } catch (err) {
       if (err.response?.status === 401) logout();
       console.error(err);
@@ -34,17 +35,25 @@ function Files() {
   };
 
   const fetchPatients = async () => {
-    const res = await api.get("/api/patients", {
-      headers: { Authorization: `Bearer ${token}` },
-    });
-    setPatients(res.data);
+    try {
+      const res = await api.get("/api/patients", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setPatients(Array.isArray(res.data) ? res.data : []);
+    } catch (err) {
+      console.error(err);
+    }
   };
 
   const fetchDoctors = async () => {
-    const res = await api.get("/api/doctors", {
-      headers: { Authorization: `Bearer ${token}` },
-    });
-    setDoctors(res.data);
+    try {
+      const res = await api.get("/api/doctors", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setDoctors(Array.isArray(res.data) ? res.data : []);
+    } catch (err) {
+      console.error(err);
+    }
   };
 
   useEffect(() => {
@@ -54,6 +63,15 @@ function Files() {
       fetchDoctors();
     }
   }, [token]);
+
+  const filteredFiles = files.filter((f) => {
+    const term = search.toLowerCase();
+    // Added safety checks (?. and || "") to prevent "toLowerCase of undefined" errors
+    const nameMatch = (f?.file_name || "").toLowerCase().includes(term);
+    const patientMatch = (f?.patient_full_name || "").toLowerCase().includes(term);
+    const descMatch = (f?.description || "").toLowerCase().includes(term);
+    return nameMatch || patientMatch || descMatch;
+  });
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -102,9 +120,21 @@ function Files() {
           <p style={{ color: "#86868b", fontSize: "14px", margin: "2px 0 0 0" }}>Secure storage for medical imaging and documents</p>
         </div>
         
-        <button className="btn-macos btn-macos-primary" onClick={() => setShowForm(true)}>
-          <Upload size={14} style={{ marginRight: "6px" }} /> Upload Document
-        </button>
+        <div className="d-flex gap-2">
+            <div style={{ position: 'relative' }}>
+                <Search size={14} style={{ position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)', color: '#86868b' }} />
+                <input
+                className="form-control"
+                style={{ paddingLeft: '32px', width: '220px', fontSize: "13px" }}
+                placeholder="Search documents..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                />
+            </div>
+            <button className="btn-macos btn-macos-primary" onClick={() => setShowForm(true)}>
+              <Upload size={14} style={{ marginRight: "6px" }} /> Upload Document
+            </button>
+        </div>
       </header>
 
       {showForm && (
@@ -126,14 +156,14 @@ function Files() {
                 <label style={{ fontSize: "11px", fontWeight: "600", color: "#86868b", display: "block", marginBottom: "5px" }}>ASSOCIATED PATIENT</label>
                 <select className="form-select" style={{ fontSize: "13px" }} value={form.patientId} onChange={(e) => setForm({ ...form, patientId: e.target.value })} required>
                   <option value="">Select patient</option>
-                  {patients.map((p) => (<option key={p.id} value={p.id}>{p.full_name}</option>))}
+                  {patients.map((p) => (<option key={p.id} value={p.id}>{p.full_name || p.fullName}</option>))}
                 </select>
               </div>
               <div className="col-md-6">
                 <label style={{ fontSize: "11px", fontWeight: "600", color: "#86868b", display: "block", marginBottom: "5px" }}>REFERRING DOCTOR</label>
                 <select className="form-select" style={{ fontSize: "13px" }} value={form.doctorId} onChange={(e) => setForm({ ...form, doctorId: e.target.value })} required>
                   <option value="">Select doctor</option>
-                  {doctors.map((d) => (<option key={d.id} value={d.id}>{d.full_name}</option>))}
+                  {doctors.map((d) => (<option key={d.id} value={d.id}>{d.full_name || d.fullName}</option>))}
                 </select>
               </div>
               <div className="col-md-12">
@@ -147,7 +177,7 @@ function Files() {
             </div>
 
             <div className="mt-4 d-flex justify-content-end gap-2">
-              <button type="button" className="btn-macos btn-macos-secondary" onClick={() => setShowForm(false)}>Cancel</button>
+              <button type="button" className="btn-macos btn-macos-secondary" onClick={() => {setShowForm(false);}}>Cancel</button>
               <button type="submit" className="btn-macos btn-macos-primary">Start Upload</button>
             </div>
           </form>
@@ -170,8 +200,8 @@ function Files() {
               </tr>
             </thead>
             <tbody style={{ fontSize: "13px" }}>
-              {files.length > 0 ? (
-                files.map((f) => (
+              {filteredFiles.length > 0 ? (
+                filteredFiles.map((f) => (
                   <tr key={f.id} style={{ borderTop: "1px solid rgba(0, 0, 0, 0.02)" }}>
                     <td className="px-4 py-3">
                       <div className="d-flex align-items-center">
@@ -195,8 +225,14 @@ function Files() {
               ) : (
                 <tr>
                   <td colSpan="5" className="text-center py-5" style={{ color: "#86868b" }}>
-                    <HardDrive size={32} style={{ opacity: 0.2, marginBottom: '10px' }} /><br/>
-                    The file repository is currently empty.
+                    {search ? (
+                        <>No results found for "{search}"</>
+                    ) : (
+                        <>
+                            <HardDrive size={32} style={{ opacity: 0.2, marginBottom: '10px' }} /><br/>
+                            The file repository is currently empty.
+                        </>
+                    )}
                   </td>
                 </tr>
               )}

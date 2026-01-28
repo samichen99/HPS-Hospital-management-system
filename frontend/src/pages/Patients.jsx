@@ -40,20 +40,15 @@ function Patients() {
     if (token) fetchPatients();
   }, [token]);
 
-  const handleSearch = async () => {
-    if (!search.trim()) {
-      fetchPatients();
-      return;
-    }
-    try {
-      const res = await api.get(`/api/patients/search?name=${search}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      setPatients(res.data);
-    } catch (err) {
-      console.error(err);
-    }
-  };
+  // Real-time dynamic filtering logic
+  const filteredPatients = patients.filter((p) => {
+    const term = search.toLowerCase();
+    return (
+      p.full_name.toLowerCase().includes(term) ||
+      (p.insurance_number && p.insurance_number.toLowerCase().includes(term)) ||
+      p.phone.includes(term)
+    );
+  });
 
   const openCreateForm = () => {
     setEditingId(null);
@@ -122,10 +117,9 @@ function Patients() {
                 <input
                 className="form-control"
                 style={{ paddingLeft: '32px', width: '220px', fontSize: "13px" }}
-                placeholder="Search name..."
+                placeholder="Search patients..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
                 />
             </div>
             <button className="btn-macos btn-macos-primary" onClick={openCreateForm}>
@@ -209,8 +203,8 @@ function Patients() {
               </tr>
             </thead>
             <tbody style={{ fontSize: "13px" }}>
-              {patients.length > 0 ? (
-                patients.map((p) => (
+              {filteredPatients.length > 0 ? (
+                filteredPatients.map((p) => (
                   <tr key={p.id} style={{ borderTop: "1px solid rgba(0, 0, 0, 0.02)" }}>
                     <td className="px-4 py-3" style={{ color: "#86868b", fontSize: "12px", fontFamily: "monospace" }}>#{p.id}</td>
                     <td className="py-3" style={{ fontWeight: "600", color: "#1d1d1f" }}>{p.full_name}</td>
@@ -234,7 +228,9 @@ function Patients() {
                 ))
               ) : (
                 <tr>
-                  <td colSpan="7" className="text-center py-5" style={{ color: "#86868b" }}>No active patient records found.</td>
+                  <td colSpan="7" className="text-center py-5" style={{ color: "#86868b" }}>
+                    {search ? `No records found for "${search}"` : "No active patient records found."}
+                  </td>
                 </tr>
               )}
             </tbody>

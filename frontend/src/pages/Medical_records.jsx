@@ -44,20 +44,20 @@ function MedicalRecords() {
     if (token) fetchData();
   }, [token]);
 
-  const handleSearch = async () => {
-    if (!search.trim()) {
-      fetchData();
-      return;
-    }
-    try {
-      const res = await api.get(`/api/medical-records/search?query=${search}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      setRecords(res.data);
-    } catch (err) {
-      console.error(err);
-    }
-  };
+  // Dynamic filtering logic for real-time search
+  const filteredRecords = records.filter((r) => {
+    const term = search.toLowerCase();
+    const patientName = (r.patientFullName || r.patient_full_name || "").toLowerCase();
+    const doctorName = (r.doctorFullName || r.doctor_full_name || "").toLowerCase();
+    const diagnosis = (r.diagnosis || "").toLowerCase();
+
+    return (
+      patientName.includes(term) ||
+      doctorName.includes(term) ||
+      diagnosis.includes(term) ||
+      r.id.toString().includes(term)
+    );
+  });
 
   const openCreateForm = () => {
     setEditingId(null);
@@ -126,10 +126,9 @@ function MedicalRecords() {
                 <input
                 className="form-control"
                 style={{ paddingLeft: '32px', width: '220px', fontSize: "13px" }}
-                placeholder="Search diagnosis..."
+                placeholder="Search history..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
                 />
             </div>
             <button className="btn-macos btn-macos-primary" onClick={openCreateForm}>
@@ -206,8 +205,8 @@ function MedicalRecords() {
               </tr>
             </thead>
             <tbody style={{ fontSize: "13px" }}>
-              {records.length > 0 ? (
-                records.map((r) => (
+              {filteredRecords.length > 0 ? (
+                filteredRecords.map((r) => (
                   <tr key={r.id} style={{ borderTop: "1px solid rgba(0, 0, 0, 0.02)" }}>
                     <td className="px-4 py-3" style={{ color: "#86868b", fontSize: "12px", fontFamily: "monospace" }}>#{r.id}</td>
                     <td className="py-3" style={{ fontWeight: "600", color: "#1d1d1f" }}>{r.patientFullName || r.patient_full_name}</td>
@@ -228,7 +227,9 @@ function MedicalRecords() {
                 ))
               ) : (
                 <tr>
-                  <td colSpan="6" className="text-center py-5" style={{ color: "#86868b" }}>No clinical records available.</td>
+                  <td colSpan="6" className="text-center py-5" style={{ color: "#86868b" }}>
+                    {search ? `No records matching "${search}"` : "No clinical records available."}
+                  </td>
                 </tr>
               )}
             </tbody>

@@ -39,20 +39,15 @@ function Doctors() {
     if (token) fetchDoctors();
   }, [token]);
 
-  const handleSearch = async () => {
-    if (!search.trim()) {
-      fetchDoctors();
-      return;
-    }
-    try {
-      const res = await api.get(`/api/doctors/search?name=${search}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      setDoctors(res.data);
-    } catch (err) {
-      console.error(err);
-    }
-  };
+  // Dynamic filtering logic for real-time search
+  const filteredDoctors = doctors.filter((d) => {
+    const term = search.toLowerCase();
+    return (
+      d.full_name.toLowerCase().includes(term) ||
+      d.speciality.toLowerCase().includes(term) ||
+      d.phone.includes(term)
+    );
+  });
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -130,10 +125,9 @@ function Doctors() {
                 <input
                   className="form-control"
                   style={{ paddingLeft: '32px', width: '220px', fontSize: "13px" }}
-                  placeholder="Search name or speciality..."
+                  placeholder="Search staff..."
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
-                  onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
                 />
             </div>
             <button className="btn-macos btn-macos-primary" onClick={openCreateForm}>
@@ -211,8 +205,8 @@ function Doctors() {
               </tr>
             </thead>
             <tbody style={{ fontSize: "13px" }}>
-              {doctors.length > 0 ? (
-                doctors.map((d) => (
+              {filteredDoctors.length > 0 ? (
+                filteredDoctors.map((d) => (
                   <tr key={d.id} style={{ borderTop: "1px solid rgba(0, 0, 0, 0.02)" }}>
                     <td className="px-4 py-3" style={{ color: "#86868b", fontSize: "12px", fontFamily: "monospace" }}>#{d.id}</td>
                     <td className="py-3" style={{ fontWeight: "600", color: "#1d1d1f" }}>{d.full_name}</td>
@@ -242,7 +236,9 @@ function Doctors() {
                 ))
               ) : (
                 <tr>
-                  <td colSpan="6" className="text-center py-5" style={{ color: "#86868b" }}>No practitioner records found.</td>
+                  <td colSpan="6" className="text-center py-5" style={{ color: "#86868b" }}>
+                    {search ? `No results for "${search}"` : "No practitioner records found."}
+                  </td>
                 </tr>
               )}
             </tbody>
