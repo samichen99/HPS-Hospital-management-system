@@ -46,7 +46,6 @@ function Payments() {
     }
   }, [token]);
 
-  // Real-time filtering for the transaction history
   const filteredPayments = payments.filter((p) => {
     const term = search.toLowerCase();
     const payId = (p.id?.toString() || "").toLowerCase();
@@ -92,26 +91,53 @@ function Payments() {
     }
   };
 
-  if (loading) return <div style={{ padding: "40px", color: "#86868b", fontSize: "13px" }}>Loading transaction history...</div>;
+  const mainContainerStyle = {
+    backgroundColor: "rgba(226, 226, 226, 0.40)",
+    borderRadius: "18px",
+    minHeight: "100vh",
+    padding: "40px",
+    color: "#1d1d1f",
+    fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Display", sans-serif',
+    backdropFilter: "blur(4px) saturate(150%)",
+    WebkitBackdropFilter: "blur(4px) saturate(150%)",
+    border: "1px solid rgba(0, 0, 0, 0.1)",
+    boxShadow: "0 8px 32px rgba(0, 0, 0, 0.06)"
+  };
+
+  if (loading) return <div style={{ padding: "40px", color: "#424245", fontSize: "13px" }}>Loading transaction history...</div>;
 
   if (user.role !== "admin" && user.role !== "doctor") {
-    return <div className="text-center p-5" style={{ color: "#ff3b30", fontSize: "14px" }}>Restricted Access: Billing permissions required.</div>;
+    return (
+      <div style={mainContainerStyle} className="d-flex align-items-center justify-content-center">
+        <div className="text-center p-5 glass-card" style={{ border: "1px solid rgba(255, 59, 48, 0.2)" }}>
+          <p style={{ color: "#ff3b30", fontSize: "14px", margin: 0, fontWeight: "600" }}>Restricted Access: Billing permissions required.</p>
+        </div>
+      </div>
+    );
   }
 
   return (
-    <div style={{ backgroundColor: "#f1f1f1ff", minHeight: "100vh", padding: "40px", fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Display", sans-serif' }}>
-      <header className="d-flex justify-content-between align-items-end mb-5">
+    <div style={mainContainerStyle}>
+      <header className="d-flex justify-content-between align-items-center mb-5">
         <div>
           <h2 style={{ fontWeight: "700", fontSize: "24px", letterSpacing: "-0.01em", margin: 0 }}>Transaction Ledger</h2>
-          <p style={{ color: "#86868b", fontSize: "14px", margin: "2px 0 0 0" }}>Process payments and audit inbound revenue</p>
+          <p style={{ color: "#424245", fontSize: "14px", margin: "2px 0 0 0" }}>Process payments and audit inbound revenue</p>
         </div>
         
         <div className="d-flex gap-2">
             <div style={{ position: 'relative' }}>
-                <Search size={14} style={{ position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)', color: '#86868b' }} />
+                <Search size={14} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#424245', opacity: 0.6 }} />
                 <input
                 className="form-control"
-                style={{ paddingLeft: '32px', width: '220px', fontSize: "13px" }}
+                style={{ 
+                  paddingLeft: '34px', 
+                  width: '240px', 
+                  fontSize: "13px",
+                  height: "32px",
+                  backgroundColor: "rgba(255, 255, 255, 0.2)",
+                  border: "1px solid rgba(255, 255, 255, 0.2)",
+                  backdropFilter: "blur(10px)"
+                }}
                 placeholder="Search transactions..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
@@ -125,22 +151,20 @@ function Payments() {
 
       {showForm && (
         <div className="glass-card mb-5" style={{ 
-            border: "1px solid rgba(0, 122, 255, 0.3)", 
-            backgroundColor: "rgba(255, 255, 255, 0.9)",
-            boxShadow: "0 10px 40px rgba(0,0,0,0.08)"
+            border: "1px solid rgba(255, 255, 255, 0.3)", 
+            backgroundColor: "rgba(255, 255, 255, 0.45)",
+            backdropFilter: "blur(30px) saturate(180%)",
+            padding: "24px"
         }}>
           <div className="d-flex justify-content-between align-items-center mb-4">
             <h5 style={{ margin: 0, fontWeight: "600", fontSize: "15px" }}>Register Receipt</h5>
-            <button onClick={() => setShowForm(false)} style={{ background: 'none', border: 'none', color: '#86868b', cursor: 'pointer' }}>
-                <X size={18} />
-            </button>
+            <X size={18} style={{ cursor: "pointer", color: "#424245" }} onClick={() => setShowForm(false)} />
           </div>
           
-          <form onSubmit={handleSubmit}>
-            <div className="row g-3">
+          <form onSubmit={handleSubmit} className="row g-3">
               <div className="col-md-5">
-                <label style={{ fontSize: "11px", fontWeight: "600", color: "#86868b", display: "block", marginBottom: "5px" }}>TARGET INVOICE</label>
-                <select className="form-select" style={{ fontSize: "13px" }} value={form.invoiceId} onChange={(e) => setForm({ ...form, invoiceId: e.target.value })} required>
+                <label style={{ fontSize: "11px", fontWeight: "600", color: "#424245", textTransform: "uppercase", marginBottom: "6px", display: "block" }}>Target Invoice</label>
+                <select className="form-select" value={form.invoiceId} onChange={(e) => setForm({ ...form, invoiceId: e.target.value })} required>
                   <option value="">Choose an invoice</option>
                   {invoices.filter(i => i.status !== 'paid').map((inv) => (
                     <option key={inv.id} value={inv.id}>#{inv.id.toString().padStart(4, '0')} — {inv.amount} MAD</option>
@@ -148,61 +172,68 @@ function Payments() {
                 </select>
               </div>
               <div className="col-md-3">
-                <label style={{ fontSize: "11px", fontWeight: "600", color: "#86868b", display: "block", marginBottom: "5px" }}>AMOUNT RECEIVED</label>
-                <input type="number" className="form-control" style={{ fontSize: "13px" }} value={form.amount} onChange={(e) => setForm({ ...form, amount: e.target.value })} required />
+                <label style={{ fontSize: "11px", fontWeight: "600", color: "#424245", textTransform: "uppercase", marginBottom: "6px", display: "block" }}>Amount Received</label>
+                <input type="number" className="form-control" value={form.amount} onChange={(e) => setForm({ ...form, amount: e.target.value })} required />
               </div>
               <div className="col-md-4">
-                <label style={{ fontSize: "11px", fontWeight: "600", color: "#86868b", display: "block", marginBottom: "5px" }}>PAYMENT METHOD</label>
-                <select className="form-select" style={{ fontSize: "13px" }} value={form.method} onChange={(e) => setForm({ ...form, method: e.target.value })}>
+                <label style={{ fontSize: "11px", fontWeight: "600", color: "#424245", textTransform: "uppercase", marginBottom: "6px", display: "block" }}>Payment Method</label>
+                <select className="form-select" value={form.method} onChange={(e) => setForm({ ...form, method: e.target.value })}>
                   <option value="cash">Cash</option>
                   <option value="card">Credit/Debit Card</option>
                   <option value="transfer">Bank Transfer</option>
                 </select>
               </div>
               <div className="col-md-12">
-                <label style={{ fontSize: "11px", fontWeight: "600", color: "#86868b", display: "block", marginBottom: "5px" }}>TRANSACTION NOTES</label>
-                <textarea className="form-control" style={{ fontSize: "13px" }} rows="2" value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} placeholder="Reference numbers or specific details..." />
+                <label style={{ fontSize: "11px", fontWeight: "600", color: "#424245", textTransform: "uppercase", marginBottom: "6px", display: "block" }}>Transaction Notes</label>
+                <textarea className="form-control" rows="2" value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} placeholder="Reference numbers or specific details..." />
               </div>
-            </div>
-
-            <div className="mt-4 d-flex justify-content-end gap-2">
-              <button type="button" className="btn-macos btn-macos-secondary" onClick={() => setShowForm(false)}>Cancel</button>
-              <button type="submit" className="btn-macos btn-macos-primary">Post Payment</button>
-            </div>
+              <div className="col-12 d-flex justify-content-end gap-2 mt-4">
+                <button type="button" className="btn-macos btn-macos-secondary" onClick={() => setShowForm(false)}>Cancel</button>
+                <button type="submit" className="btn-macos btn-macos-primary">Post Payment</button>
+              </div>
           </form>
         </div>
       )}
 
-      <div className="glass-card" style={{ padding: "0", border: "1px solid rgba(0, 0, 0, 0.05)", overflow: "hidden" }}>
-        <div style={{ padding: "14px 20px", borderBottom: "1px solid rgba(0, 0, 0, 0.05)", background: "rgba(255, 255, 255, 0.3)" }}>
-            <h6 style={{ margin: 0, fontWeight: "600", fontSize: "14px" }}><History size={16} className="me-2" /> Recent Collections</h6>
+      <div className="glass-card" style={{ 
+          padding: "0", 
+          backgroundColor: "rgba(255, 255, 255, 0.35)", 
+          border: "1px solid rgba(255, 255, 255, 0.3)",
+          overflow: "hidden",
+          backdropFilter: "blur(20px) saturate(160%)"
+      }}>
+        <div style={{ padding: "14px 20px", borderBottom: "1px solid rgba(0, 0, 0, 0.05)", background: "rgba(255, 255, 255, 0.1)" }}>
+            <h6 style={{ margin: 0, fontWeight: "600", fontSize: "14px", display: 'flex', alignItems: 'center' }}>
+              <History size={16} className="me-2" style={{ opacity: 0.7 }} /> Recent Collections
+            </h6>
         </div>
         <div className="table-responsive">
-          <table className="table table-macos m-0">
+          <table className="table table-borderless m-0">
             <thead>
-              <tr style={{ color: "#86868b", fontSize: "11px" }}>
-                <th className="px-4 py-3">#PAYMENT</th>
-                <th className="py-3">INVOICE</th>
-                <th className="py-3">AMOUNT</th>
-                <th className="py-3">METHOD</th>
-                <th className="py-3">SETTLEMENT DATE</th>
-                <th className="px-4 py-3">MEMO</th>
+              <tr style={{ color: "#424245", fontSize: "11px", letterSpacing: "0.02em" }}>
+                <th className="px-4 py-3 font-weight-normal">#PAYMENT</th>
+                <th className="py-3 font-weight-normal">INVOICE</th>
+                <th className="py-3 font-weight-normal">AMOUNT</th>
+                <th className="py-3 font-weight-normal">METHOD</th>
+                <th className="py-3 font-weight-normal">SETTLEMENT DATE</th>
+                <th className="px-4 py-3 font-weight-normal">MEMO</th>
               </tr>
             </thead>
             <tbody style={{ fontSize: "12px" }}>
               {filteredPayments.length > 0 ? (
                 filteredPayments.map((p) => (
-                  <tr key={p.id} style={{ borderTop: "1px solid rgba(0, 0, 0, 0.02)" }}>
-                    <td className="px-4 py-3" style={{ color: "#86868b", fontFamily: "monospace" }}>#{p.id.toString().padStart(5, '0')}</td>
-                    <td className="py-3"><span style={{ color: "#007aff", fontWeight: "600" }}>#{p.invoice_id.toString().padStart(4, '0')}</span></td>
-                    <td className="py-3" style={{ fontWeight: "700", color: "#1d1d1f" }}>{p.amount} MAD</td>
+                  <tr key={p.id} style={{ borderTop: "1px solid rgba(0, 0, 0, 0.04)" }}>
+                    <td className="px-4 py-3" style={{ color: "#424245", fontFamily: "monospace" }}>#{p.id.toString().padStart(5, '0')}</td>
+                    <td className="py-3"><span style={{ color: "#007aff", fontWeight: "600" }}>#{p.invoice_id?.toString().padStart(4, '0')}</span></td>
+                    <td className="py-3" style={{ fontWeight: "700", color: "#1d1d1f" }}>{Number(p.amount).toLocaleString()} MAD</td>
                     <td className="py-3">
                         <span className="d-inline-flex align-items-center" style={{ 
                             textTransform: 'capitalize', 
                             backgroundColor: 'rgba(0,0,0,0.05)', 
-                            padding: '2px 8px', 
-                            borderRadius: '4px',
-                            fontSize: '11px'
+                            padding: '3px 10px', 
+                            borderRadius: '100px',
+                            fontSize: '10px',
+                            fontWeight: '600'
                         }}>
                           {getMethodIcon(p.method)} {p.method}
                         </span>
@@ -213,8 +244,8 @@ function Payments() {
                 ))
               ) : (
                 <tr>
-                  <td colSpan="6" className="text-center py-5" style={{ color: "#86868b" }}>
-                    {search ? `No payments match "${search}"` : "No payment history recorded in the current period."}
+                  <td colSpan="6" className="text-center py-5" style={{ color: "#424245" }}>
+                    {search ? `No payments match "${search}"` : "No payment history recorded."}
                   </td>
                 </tr>
               )}

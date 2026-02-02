@@ -24,18 +24,17 @@ function Navbar() {
     };
 
     const navStyle = {
-        
-        backdropFilter: "blur(20px) saturate(180%)",
-        WebkitBackdropFilter: "blur(20px) saturate(180%)",
-        backgroundImage: "linear-gradient(to bottom, rgba(246, 246, 246, 0.85), rgba(221, 221, 221, 0.82))",
-        backgroundColor: "rgba(255, 255, 255, 0.3)",
-        boxShadow: "inset 0 1px 0 rgba(255, 255, 255, 0.4), 0 1px 2px rgba(0, 0, 0, 0.05)",
-        borderBottom: "1px solid rgba(0, 0, 0, 0.15)",
+        backdropFilter: "blur(40px) saturate(210%)",
+        WebkitBackdropFilter: "blur(40px) saturate(210%)",
+        backgroundImage: "linear-gradient(to bottom, rgba(246, 246, 246, 0.4), rgba(221, 221, 221, 0.35))",
+        backgroundColor: "rgba(235, 235, 235, 0.75)",
+        boxShadow: "inset 0 1px 0 rgba(255, 255, 255, 0.3), 0 1px 2px rgba(0, 0, 0, 0.05)",
+        borderBottom: "1px solid rgba(0, 0, 0, 0.1)",
         position: "fixed",
         top: 0,
         left: 0,
         right: 0,
-        zIndex: 9999, // Ensure it stays above all other content
+        zIndex: 9999, 
         
         height: "24px", 
         display: "flex",
@@ -67,11 +66,10 @@ function Navbar() {
 
     return (
         <>
-            {/* Spacer to prevent content from hiding under the fixed navbar */}
-            <div style={{ height: "24px" }}></div>
+            
+            <div style={{ height: "24px", width: "100%" }}></div>
             
             <nav style={navStyle}>
-                {/* Left Side: System Menus */}
                 <div style={{ display: "flex", alignItems: "center" }}>
                     <div style={{ ...menuLinkStyle, paddingLeft: "4px" }}>
                         <svg width="13" height="13" viewBox="0 0 17 20" fill="#1d1d1f">
@@ -86,7 +84,6 @@ function Navbar() {
                     </div>
                 </div>
 
-                {/* Right Side: Status Items */}
                 <div style={{ marginLeft: "auto", display: "flex", alignItems: "center", paddingRight: "4px" }}>
                     {user && (
                         <div style={{ ...menuLinkStyle, color: "#007aff" }}>

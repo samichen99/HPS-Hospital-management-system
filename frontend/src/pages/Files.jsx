@@ -66,9 +66,8 @@ function Files() {
 
   const filteredFiles = files.filter((f) => {
     const term = search.toLowerCase();
-    // Added safety checks (?. and || "") to prevent "toLowerCase of undefined" errors
-    const nameMatch = (f?.file_name || "").toLowerCase().includes(term);
-    const patientMatch = (f?.patient_full_name || "").toLowerCase().includes(term);
+    const nameMatch = (f?.file_name || f?.fileName || "").toLowerCase().includes(term);
+    const patientMatch = (f?.patient_full_name || f?.patientFullName || "").toLowerCase().includes(term);
     const descMatch = (f?.description || "").toLowerCase().includes(term);
     return nameMatch || patientMatch || descMatch;
   });
@@ -110,22 +109,43 @@ function Files() {
     }
   };
 
-  if (loading) return <div style={{ padding: "40px", color: "#86868b", fontSize: "13px" }}>Loading file repository...</div>;
+  const mainContainerStyle = {
+    backgroundColor: "rgba(226, 226, 226, 0.40)",
+    borderRadius: "18px",
+    minHeight: "100vh",
+    padding: "40px",
+    color: "#1d1d1f",
+    fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Display", sans-serif',
+    backdropFilter: "blur(4px) saturate(150%)",
+    WebkitBackdropFilter: "blur(4px) saturate(150%)",
+    border: "1px solid rgba(0, 0, 0, 0.1)",
+    boxShadow: "0 8px 32px rgba(0, 0, 0, 0.06)"
+  };
+
+  if (loading) return <div style={{ padding: "40px", color: "#424245", fontSize: "13px" }}>Loading file repository...</div>;
 
   return (
-    <div style={{ backgroundColor: "#f1f1f1ff", minHeight: "100vh", padding: "40px", fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Display", sans-serif' }}>
-      <header className="d-flex justify-content-between align-items-end mb-5">
+    <div style={mainContainerStyle}>
+      <header className="d-flex justify-content-between align-items-center mb-5">
         <div>
-          <h2 style={{ fontWeight: "700", fontSize: "24px", letterSpacing: "-0.01em", margin: 0 }}>Files Management</h2>
-          <p style={{ color: "#86868b", fontSize: "14px", margin: "2px 0 0 0" }}>Secure storage for medical imaging and documents</p>
+          <h2 style={{ fontWeight: "700", fontSize: "24px", letterSpacing: "-0.01em", marginBottom: "2px" }}>Files Management</h2>
+          <p style={{ color: "#424245", fontSize: "14px", margin: 0 }}>Secure storage for medical imaging and documents</p>
         </div>
         
         <div className="d-flex gap-2">
             <div style={{ position: 'relative' }}>
-                <Search size={14} style={{ position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)', color: '#86868b' }} />
+                <Search size={14} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#424245', opacity: 0.6 }} />
                 <input
                 className="form-control"
-                style={{ paddingLeft: '32px', width: '220px', fontSize: "13px" }}
+                style={{ 
+                  paddingLeft: '34px', 
+                  width: '240px', 
+                  fontSize: "13px",
+                  height: "32px",
+                  backgroundColor: "rgba(255, 255, 255, 0.2)",
+                  border: "1px solid rgba(255, 255, 255, 0.2)",
+                  backdropFilter: "blur(10px)"
+                }}
                 placeholder="Search documents..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
@@ -139,99 +159,101 @@ function Files() {
 
       {showForm && (
         <div className="glass-card mb-5" style={{ 
-            border: "1px solid rgba(0, 122, 255, 0.3)", 
-            backgroundColor: "rgba(255, 255, 255, 0.85)",
-            boxShadow: "0 10px 30px rgba(0,0,0,0.05)"
+            border: "1px solid rgba(255, 255, 255, 0.3)", 
+            backgroundColor: "rgba(255, 255, 255, 0.45)",
+            backdropFilter: "blur(30px) saturate(180%)",
+            padding: "24px"
         }}>
           <div className="d-flex justify-content-between align-items-center mb-4">
-            <h5 style={{ margin: 0, fontWeight: "600", fontSize: "15px", color: "#1d1d1f" }}>File Upload Portal</h5>
-            <button onClick={() => setShowForm(false)} style={{ background: 'none', border: 'none', color: '#86868b', cursor: 'pointer' }}>
-                <X size={18} />
-            </button>
+            <h5 style={{ margin: 0, fontWeight: "600", fontSize: "15px" }}>File Upload Portal</h5>
+            <X size={18} style={{ cursor: "pointer", color: "#424245" }} onClick={() => setShowForm(false)} />
           </div>
           
-          <form onSubmit={handleSubmit}>
-            <div className="row g-3">
+          <form onSubmit={handleSubmit} className="row g-3">
               <div className="col-md-6">
-                <label style={{ fontSize: "11px", fontWeight: "600", color: "#86868b", display: "block", marginBottom: "5px" }}>ASSOCIATED PATIENT</label>
-                <select className="form-select" style={{ fontSize: "13px" }} value={form.patientId} onChange={(e) => setForm({ ...form, patientId: e.target.value })} required>
+                <label style={{ fontSize: "11px", fontWeight: "600", color: "#424245", textTransform: "uppercase", marginBottom: "6px", display: "block" }}>Associated Patient</label>
+                <select className="form-select" value={form.patientId} onChange={(e) => setForm({ ...form, patientId: e.target.value })} required>
                   <option value="">Select patient</option>
                   {patients.map((p) => (<option key={p.id} value={p.id}>{p.full_name || p.fullName}</option>))}
                 </select>
               </div>
               <div className="col-md-6">
-                <label style={{ fontSize: "11px", fontWeight: "600", color: "#86868b", display: "block", marginBottom: "5px" }}>REFERRING DOCTOR</label>
-                <select className="form-select" style={{ fontSize: "13px" }} value={form.doctorId} onChange={(e) => setForm({ ...form, doctorId: e.target.value })} required>
+                <label style={{ fontSize: "11px", fontWeight: "600", color: "#424245", textTransform: "uppercase", marginBottom: "6px", display: "block" }}>Referring Doctor</label>
+                <select className="form-select" value={form.doctorId} onChange={(e) => setForm({ ...form, doctorId: e.target.value })} required>
                   <option value="">Select doctor</option>
                   {doctors.map((d) => (<option key={d.id} value={d.id}>{d.full_name || d.fullName}</option>))}
                 </select>
               </div>
               <div className="col-md-12">
-                <label style={{ fontSize: "11px", fontWeight: "600", color: "#86868b", display: "block", marginBottom: "5px" }}>FILE DESCRIPTION</label>
-                <input type="text" className="form-control" style={{ fontSize: "13px" }} value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} placeholder="e.g., Chest X-Ray, Lab Results..." />
+                <label style={{ fontSize: "11px", fontWeight: "600", color: "#424245", textTransform: "uppercase", marginBottom: "6px", display: "block" }}>File Description</label>
+                <input type="text" className="form-control" value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} placeholder="e.g., Chest X-Ray, Lab Results..." />
               </div>
               <div className="col-md-12">
-                <label style={{ fontSize: "11px", fontWeight: "600", color: "#86868b", display: "block", marginBottom: "5px" }}>SELECT FILE</label>
-                <input type="file" className="form-control" style={{ fontSize: "13px" }} onChange={(e) => setForm({ ...form, file: e.target.files[0] })} required />
+                <label style={{ fontSize: "11px", fontWeight: "600", color: "#424245", textTransform: "uppercase", marginBottom: "6px", display: "block" }}>Select File</label>
+                <input type="file" className="form-control" onChange={(e) => setForm({ ...form, file: e.target.files[0] })} required />
               </div>
-            </div>
-
-            <div className="mt-4 d-flex justify-content-end gap-2">
-              <button type="button" className="btn-macos btn-macos-secondary" onClick={() => {setShowForm(false);}}>Cancel</button>
-              <button type="submit" className="btn-macos btn-macos-primary">Start Upload</button>
-            </div>
+              <div className="col-12 d-flex justify-content-end gap-2 mt-4">
+                <button type="button" className="btn-macos btn-macos-secondary" onClick={() => setShowForm(false)}>Cancel</button>
+                <button type="submit" className="btn-macos btn-macos-primary">Start Upload</button>
+              </div>
           </form>
         </div>
       )}
 
-      <div className="glass-card" style={{ padding: "0", border: "1px solid rgba(0, 0, 0, 0.05)", overflow: "hidden" }}>
-        <div style={{ padding: "14px 20px", borderBottom: "1px solid rgba(0, 0, 0, 0.05)", background: "rgba(255, 255, 255, 0.3)" }}>
+      <div className="glass-card" style={{ 
+          padding: "0", 
+          backgroundColor: "rgba(255, 255, 255, 0.35)", 
+          border: "1px solid rgba(255, 255, 255, 0.3)",
+          overflow: "hidden",
+          backdropFilter: "blur(20px) saturate(160%)"
+      }}>
+        <div style={{ padding: "14px 20px", borderBottom: "1px solid rgba(0, 0, 0, 0.05)", background: "rgba(255, 255, 255, 0.1)" }}>
             <h6 style={{ margin: 0, fontWeight: "600", fontSize: "14px" }}>Document Directory</h6>
         </div>
         <div className="table-responsive">
-          <table className="table table-macos m-0">
+          <table className="table table-borderless m-0">
             <thead>
-              <tr style={{ color: "#86868b", fontSize: "11px" }}>
-                <th className="px-4 py-3">NAME</th>
-                <th className="py-3">PATIENT</th>
-                <th className="py-3">DOCTOR</th>
-                <th className="py-3">DESCRIPTION</th>
-                <th className="text-end px-4 py-3">ACTIONS</th>
+              <tr style={{ color: "#424245", fontSize: "11px", letterSpacing: "0.02em" }}>
+                <th className="px-4 py-3 font-weight-normal">NAME</th>
+                <th className="py-3 font-weight-normal">PATIENT</th>
+                <th className="py-3 font-weight-normal">DOCTOR</th>
+                <th className="py-3 font-weight-normal">DESCRIPTION</th>
+                <th className="text-end px-4 py-3 font-weight-normal">ACTIONS</th>
               </tr>
             </thead>
             <tbody style={{ fontSize: "13px" }}>
               {filteredFiles.length > 0 ? (
                 filteredFiles.map((f) => (
-                  <tr key={f.id} style={{ borderTop: "1px solid rgba(0, 0, 0, 0.02)" }}>
+                  <tr key={f.id} style={{ borderTop: "1px solid rgba(0, 0, 0, 0.04)" }}>
                     <td className="px-4 py-3">
                       <div className="d-flex align-items-center">
-                        <FileText size={16} color="#007aff" style={{ marginRight: "10px" }} />
-                        <span style={{ fontWeight: "500", color: "#1d1d1f" }}>{f.file_name}</span>
+                        <FileText size={16} color="#007aff" style={{ marginRight: "10px", opacity: 0.8 }} />
+                        <span style={{ fontWeight: "600", color: "#1d1d1f" }}>{f.file_name || f.fileName}</span>
                       </div>
                     </td>
-                    <td className="py-3" style={{ color: "#424245" }}>{f.patient_full_name}</td>
-                    <td className="py-3" style={{ color: "#424245" }}>{f.doctor_full_name}</td>
-                    <td className="py-3" style={{ color: "#86868b" }}>{f.description}</td>
+                    <td className="py-3" style={{ color: "#1d1d1f" }}>{f.patient_full_name || f.patientFullName}</td>
+                    <td className="py-3" style={{ color: "#424245" }}>{f.doctor_full_name || f.doctorFullName}</td>
+                    <td className="py-3" style={{ color: "#424245", fontSize: "12px" }}>{f.description}</td>
                     <td className="text-end px-4 py-3">
-                      <a href={`/api/files/download/${f.id}`} className="btn-macos btn-macos-secondary me-2" style={{ padding: "4px 8px", display: 'inline-flex', alignItems: 'center' }}>
-                        <Download size={13} color="#28c840" />
+                      <a href={`/api/files/download/${f.id}`} className="btn-macos btn-macos-secondary me-2" style={{ padding: "4px 8px", background: "rgba(255,255,255,0.4)", display: 'inline-flex', alignItems: 'center' }}>
+                        <Download size={12} color="#28c840" />
                       </a>
-                      <button className="btn-macos btn-macos-secondary" style={{ padding: "4px 8px" }} onClick={() => deleteFile(f.id)}>
-                        <Trash2 size={13} color="#ff3b30" />
+                      <button className="btn-macos btn-macos-secondary" style={{ padding: "4px 8px", background: "rgba(255,255,255,0.4)" }} onClick={() => deleteFile(f.id)}>
+                        <Trash2 size={12} color="#ff3b30" />
                       </button>
                     </td>
                   </tr>
                 ))
               ) : (
                 <tr>
-                  <td colSpan="5" className="text-center py-5" style={{ color: "#86868b" }}>
+                  <td colSpan="5" className="text-center py-5" style={{ color: "#424245" }}>
                     {search ? (
                         <>No results found for "{search}"</>
                     ) : (
-                        <>
-                            <HardDrive size={32} style={{ opacity: 0.2, marginBottom: '10px' }} /><br/>
+                        <div style={{ opacity: 0.6 }}>
+                            <HardDrive size={32} style={{ marginBottom: '12px' }} /><br/>
                             The file repository is currently empty.
-                        </>
+                        </div>
                     )}
                   </td>
                 </tr>

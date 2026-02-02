@@ -14,7 +14,6 @@ import Files from "./pages/Files";
 import Invoices from "./pages/Invoices";
 import Payments from "./pages/Payments";
 
-
 export default function App() {
   return (
     <AuthProvider>
@@ -23,7 +22,7 @@ export default function App() {
           {/* Public route */}
           <Route path="/login" element={<Login />} />
 
-          {/* Protected routes */}
+          {/* Protected routes wrapped in MainLayout */}
           <Route
             element={
               <ProtectedRoute>
@@ -42,7 +41,7 @@ export default function App() {
             <Route path="/payments" element={<Payments />} />
           </Route>
 
-          {/* Default route: redirect to login */}
+          {/* Default routes */}
           <Route path="/" element={<Login />} />
           <Route path="*" element={<Login />} />
         </Routes>

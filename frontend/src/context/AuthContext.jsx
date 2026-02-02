@@ -1,12 +1,27 @@
 import { createContext, useState, useEffect } from "react";
 import api from "../services/apiClient";
-import {jwtDecode} from "jwt-decode";
+import { jwtDecode } from "jwt-decode";
 
 export const AuthContext = createContext();
 
 export function AuthProvider({ children }) {
-  const [user, setUser] = useState(null);
+  // Fix: Initialize user and token together to prevent navigation "blinks"
   const [token, setToken] = useState(() => localStorage.getItem("token") || null);
+  
+  const [user, setUser] = useState(() => {
+    const savedToken = localStorage.getItem("token");
+    if (savedToken) {
+      try {
+        const decoded = jwtDecode(savedToken);
+        // Initial expiry check
+        if (decoded.exp * 1000 > Date.now()) return decoded;
+      } catch (e) {
+        return null;
+      }
+    }
+    return null;
+  });
+
   const [loading, setLoading] = useState(false);
 
   const decodeToken = (t) => {
@@ -17,11 +32,14 @@ export function AuthProvider({ children }) {
     }
   };
 
+  // Keep the effect for token changes (like login/logout/expiry)
   useEffect(() => {
-    if (!token) return;
+    if (!token) {
+      setUser(null);
+      return;
+    }
 
     const decoded = decodeToken(token);
-
     if (!decoded || decoded.exp * 1000 < Date.now()) {
       logout();
     } else {
@@ -29,20 +47,17 @@ export function AuthProvider({ children }) {
     }
   }, [token]);
 
-  
   const login = async (credentials) => {
     setLoading(true);
     try {
       const res = await api.post("/auth/login", credentials);
       const { token: newToken } = res.data;
-
       if (!newToken) throw new Error("No token received");
 
       const decoded = decodeToken(newToken);
-
+      localStorage.setItem("token", newToken);
       setToken(newToken);
       setUser(decoded);
-      localStorage.setItem("token", newToken);
 
       return { ok: true };
     } catch (error) {
@@ -53,13 +68,11 @@ export function AuthProvider({ children }) {
     }
   };
 
- 
   const logout = () => {
     localStorage.removeItem("token");
     setToken(null);
     setUser(null);
   };
-
 
   useEffect(() => {
     const handleStorage = () => {
