@@ -101,14 +101,15 @@ function Payments() {
     backdropFilter: "blur(4px) saturate(150%)",
     WebkitBackdropFilter: "blur(4px) saturate(150%)",
     border: "1px solid rgba(0, 0, 0, 0.1)",
-    boxShadow: "0 8px 32px rgba(0, 0, 0, 0.06)"
+    boxShadow: "0 8px 32px rgba(0, 0, 0, 0.06)",
+    transition: "opacity 0.4s ease-in-out"
   };
 
   if (loading) return <div style={{ padding: "40px", color: "#424245", fontSize: "13px" }}>Loading transaction history...</div>;
 
   if (user.role !== "admin" && user.role !== "doctor") {
     return (
-      <div style={mainContainerStyle} className="d-flex align-items-center justify-content-center">
+      <div style={{ ...mainContainerStyle, opacity: loading ? 0 : 1 }} className="d-flex align-items-center justify-content-center">
         <div className="text-center p-5 glass-card" style={{ border: "1px solid rgba(255, 59, 48, 0.2)" }}>
           <p style={{ color: "#ff3b30", fontSize: "14px", margin: 0, fontWeight: "600" }}>Restricted Access: Billing permissions required.</p>
         </div>
@@ -117,7 +118,7 @@ function Payments() {
   }
 
   return (
-    <div style={mainContainerStyle}>
+    <div style={{ ...mainContainerStyle, opacity: loading ? 0 : 1 }}>
       <header className="d-flex justify-content-between align-items-center mb-5">
         <div>
           <h2 style={{ fontWeight: "700", fontSize: "24px", letterSpacing: "-0.01em", margin: 0 }}>Transaction Ledger</h2>

@@ -2,60 +2,70 @@ import Navbar from "../components/Navbar";
 import Sidebar from "../components/Sidebar";
 import { Outlet, useLocation } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
+import { useEffect, useState } from "react";
 
 function MainLayout() {
   const location = useLocation();
+  const [displayLocation, setDisplayLocation] = useState(location);
+  const [isExiting, setIsExiting] = useState(false);
 
-  const layoutContainerStyle = {
-    backgroundColor: "transparent",
-    minHeight: "100vh",
-    width: "100%",
-    display: "flex",
-    flexDirection: "column",
-    fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Display", sans-serif',
-  };
+  useEffect(() => {
+    if (location.pathname !== displayLocation.pathname) {
+      setIsExiting(true);
+    }
+  }, [location, displayLocation]);
 
-  // Professional macOS-style transition: slight lift and fade
   const pageVariants = {
-    initial: { 
-      opacity: 0, 
-      y: 8,
-      filter: "blur(4px)" 
-    },
+    initial: { opacity: 0, y: 5 },
     animate: { 
       opacity: 1, 
-      y: 0,
-      filter: "blur(0px)" 
+      y: 0, 
+      transition: { duration: 0.3, ease: "easeOut" } 
     },
     exit: { 
       opacity: 0, 
-      y: -8,
-      filter: "blur(4px)" 
+      y: -5, 
+      transition: { duration: 0.2, ease: "easeIn" } 
     }
   };
 
   return (
     <>
       <Navbar />
-      <div style={layoutContainerStyle}>
+      <div style={{ display: "flex", flexDirection: "column", minHeight: "100vh" }}>
         <div className="d-flex flex-grow-1">
-          {/* Sidebar is static - it does not unmount or re-animate */}
           <Sidebar /> 
-
-          <main className="flex-grow-1 p-4" style={{ overflowX: "hidden" }}>
-            <AnimatePresence mode="wait">
+          
+          
+          <main style={{ 
+            flexGrow: 1, 
+            padding: "24px", 
+            display: "grid", 
+            gridTemplateColumns: "100%",
+            alignItems: "start",
+            overflowX: "hidden"
+          }}>
+            <AnimatePresence 
+              mode="wait" 
+              initial={false}
+              onExitComplete={() => {
+                setIsExiting(false);
+                setDisplayLocation(location);
+                window.scrollTo(0, 0);
+              }}
+            >
               <motion.div
-                key={location.pathname} // This key triggers the animation on route change
+                key={displayLocation.pathname}
                 variants={pageVariants}
                 initial="initial"
                 animate="animate"
                 exit="exit"
-                transition={{ 
-                  duration: 0.3, 
-                  ease: [0.23, 1, 0.32, 1] // Apple-style cubic bezier
+                style={{ 
+                  gridArea: "1 / 1", // Forces stacking
+                  width: "100%" 
                 }}
               >
-                <Outlet />
+                <Outlet context={{ location: displayLocation }} />
               </motion.div>
             </AnimatePresence>
           </main>

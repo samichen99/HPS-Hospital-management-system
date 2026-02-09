@@ -119,13 +119,14 @@ function MedicalRecords() {
     backdropFilter: "blur(4px) saturate(150%)",
     WebkitBackdropFilter: "blur(4px) saturate(150%)",
     border: "1px solid rgba(0, 0, 0, 0.1)",
-    boxShadow: "0 8px 32px rgba(0, 0, 0, 0.06)"
+    boxShadow: "0 8px 32px rgba(0, 0, 0, 0.06)",
+    transition: "opacity 0.4s ease-in-out"
   };
 
   if (loading) return <div style={{ padding: "40px", color: "#424245", fontSize: "13px" }}>Loading patient history...</div>;
 
   return (
-    <div style={mainContainerStyle}>
+    <div style={{ ...mainContainerStyle, opacity: loading ? 0 : 1 }}>
       <header className="d-flex justify-content-between align-items-center mb-5">
         <div>
           <h2 style={{ fontWeight: "700", fontSize: "24px", letterSpacing: "-0.01em", marginBottom: "2px" }}>Medical Records</h2>

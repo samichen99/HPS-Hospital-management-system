@@ -70,7 +70,8 @@ function Dashboard() {
         backdropFilter: "blur(4px) saturate(150%)",
         WebkitBackdropFilter: "blur(4px) saturate(150%)",
         border: "1px solid rgba(0, 0, 0, 0.1)",
-        boxShadow: "0 8px 32px rgba(0, 0, 0, 0.06)"
+        boxShadow: "0 8px 32px rgba(0, 0, 0, 0.06)",
+        transition: "opacity 0.4s ease-in-out"
     };
 
     const stats = [
@@ -88,91 +89,91 @@ function Dashboard() {
         { type: "Emergency", details: "Urgent consultation: Patient #12", date: "2026-01-18", status: "Critical", color: "#ff5f57" }
     ];
 
-    if (!isReady) {
-        return <div style={{ padding: "40px", color: "#424245", fontSize: "13px" }}>Initializing secure session...</div>;
-    }
-
     return (
-        <div style={mainContainerStyle}>
-            <header className="d-flex justify-content-between align-items-center mb-5">
-                <div>
-                    <h2 style={{ fontWeight: "700", fontSize: "24px", letterSpacing: "-0.01em", marginBottom: "2px" }}>Clinic Overview</h2>
-                    <p style={{ color: "#424245", fontSize: "14px", margin: 0 }}>
-                        Welcome back, <span style={{ fontWeight: "600", color: "#1d1d1f" }}>{user?.username || "Staff"}</span>. Here is what's happening today.
-                    </p>
-                </div>
-                <div className="d-flex gap-2">
-                    <button className="btn-macos btn-macos-secondary">
-                        <Download size={14} style={{ marginRight: "6px" }} />
-                        Export
-                    </button>
-                    <button className="btn-macos btn-macos-primary">
-                        <Plus size={14} style={{ marginRight: "6px" }} />
-                        New Entry
-                    </button>
-                </div>
-            </header>
+        <div style={{ ...mainContainerStyle, opacity: isReady ? 1 : 0 }}>
+            {isReady && (
+                <>
+                    <header className="d-flex justify-content-between align-items-center mb-5">
+                        <div>
+                            <h2 style={{ fontWeight: "700", fontSize: "24px", letterSpacing: "-0.01em", marginBottom: "2px" }}>Clinic Overview</h2>
+                            <p style={{ color: "#424245", fontSize: "14px", margin: 0 }}>
+                                Welcome back, <span style={{ fontWeight: "600", color: "#1d1d1f" }}>{user?.username || "Staff"}</span>. Here is what's happening today.
+                            </p>
+                        </div>
+                        <div className="d-flex gap-2">
+                            <button className="btn-macos btn-macos-secondary">
+                                <Download size={14} style={{ marginRight: "6px" }} />
+                                Export
+                            </button>
+                            <button className="btn-macos btn-macos-primary">
+                                <Plus size={14} style={{ marginRight: "6px" }} />
+                                New Entry
+                            </button>
+                        </div>
+                    </header>
 
-            <div className="row g-4">
-                {stats.map((stat, i) => (
-                    <div className="col-md-3" key={i}>
-                        <StatCard stat={stat} />
+                    <div className="row g-4">
+                        {stats.map((stat, i) => (
+                            <div className="col-md-3" key={i}>
+                                <StatCard stat={stat} />
+                            </div>
+                        ))}
                     </div>
-                ))}
-            </div>
 
-            <div className="glass-card" style={{ 
-                marginTop: "40px", 
-                padding: "0", 
-                backgroundColor: "rgba(255, 255, 255, 0.25)",
-                border: "1px solid rgba(255, 255, 255, 0.3)",
-                overflow: "hidden",
-                backdropFilter: "blur(20px) saturate(160%)"
-            }}>
-                <div style={{ padding: "14px 20px", borderBottom: "1px solid rgba(0, 0, 0, 0.05)", background: "rgba(255, 255, 255, 0.15)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                    <h6 style={{ margin: 0, fontWeight: "600", fontSize: "14px" }}>Recent Clinic Activity</h6>
-                    <div className="d-flex gap-3">
-                        <Search size={14} style={{ cursor: "pointer", opacity: 0.6 }} />
-                        <Filter size={14} style={{ cursor: "pointer", opacity: 0.6 }} />
+                    <div className="glass-card" style={{ 
+                        marginTop: "40px", 
+                        padding: "0", 
+                        backgroundColor: "rgba(255, 255, 255, 0.25)",
+                        border: "1px solid rgba(255, 255, 255, 0.3)",
+                        overflow: "hidden",
+                        backdropFilter: "blur(20px) saturate(160%)"
+                    }}>
+                        <div style={{ padding: "14px 20px", borderBottom: "1px solid rgba(0, 0, 0, 0.05)", background: "rgba(255, 255, 255, 0.15)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                            <h6 style={{ margin: 0, fontWeight: "600", fontSize: "14px" }}>Recent Clinic Activity</h6>
+                            <div className="d-flex gap-3">
+                                <Search size={14} style={{ cursor: "pointer", opacity: 0.6 }} />
+                                <Filter size={14} style={{ cursor: "pointer", opacity: 0.6 }} />
+                            </div>
+                        </div>
+                        <div className="table-responsive">
+                            <table className="table table-borderless m-0">
+                                <thead>
+                                    <tr style={{ color: "#424245", fontSize: "11px", letterSpacing: "0.02em" }}>
+                                        <th className="px-4 py-3 font-weight-normal">CATEGORY</th>
+                                        <th className="py-3 font-weight-normal">DETAILS</th>
+                                        <th className="text-center py-3 font-weight-normal">STATUS</th>
+                                        <th className="text-end px-4 py-3 font-weight-normal">TIMESTAMP</th>
+                                    </tr>
+                                </thead>
+                                <tbody style={{ fontSize: "12px" }}>
+                                    {activities.map((act, index) => (
+                                        <tr key={index} style={{ borderTop: "1px solid rgba(0, 0, 0, 0.04)" }}>
+                                            <td className="px-4 py-3">
+                                                <span style={{ 
+                                                    padding: "3px 10px", 
+                                                    borderRadius: "100px", 
+                                                    backgroundColor: `${act.color}25`, 
+                                                    color: act.color, 
+                                                    fontWeight: "600", 
+                                                    fontSize: "10px",
+                                                    textTransform: "uppercase"
+                                                }}>
+                                                    {act.type}
+                                                </span>
+                                            </td>
+                                            <td className="py-3" style={{ fontWeight: "500", color: "#1d1d1f" }}>{act.details}</td>
+                                            <td className="text-center py-3">
+                                                <span style={{ color: "#424245", fontSize: "12px", fontWeight: "500" }}>{act.status}</span>
+                                            </td>
+                                            <td className="text-end px-4 py-3" style={{ color: "#424245" }}>{act.date}</td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
-                </div>
-                <div className="table-responsive">
-                    <table className="table table-borderless m-0">
-                        <thead>
-                            <tr style={{ color: "#424245", fontSize: "11px", letterSpacing: "0.02em" }}>
-                                <th className="px-4 py-3 font-weight-normal">CATEGORY</th>
-                                <th className="py-3 font-weight-normal">DETAILS</th>
-                                <th className="text-center py-3 font-weight-normal">STATUS</th>
-                                <th className="text-end px-4 py-3 font-weight-normal">TIMESTAMP</th>
-                            </tr>
-                        </thead>
-                        <tbody style={{ fontSize: "12px" }}>
-                            {activities.map((act, index) => (
-                                <tr key={index} style={{ borderTop: "1px solid rgba(0, 0, 0, 0.04)" }}>
-                                    <td className="px-4 py-3">
-                                        <span style={{ 
-                                            padding: "3px 10px", 
-                                            borderRadius: "100px", 
-                                            backgroundColor: `${act.color}25`, 
-                                            color: act.color, 
-                                            fontWeight: "600", 
-                                            fontSize: "10px",
-                                            textTransform: "uppercase"
-                                        }}>
-                                            {act.type}
-                                        </span>
-                                    </td>
-                                    <td className="py-3" style={{ fontWeight: "500", color: "#1d1d1f" }}>{act.details}</td>
-                                    <td className="text-center py-3">
-                                        <span style={{ color: "#424245", fontSize: "12px", fontWeight: "500" }}>{act.status}</span>
-                                    </td>
-                                    <td className="text-end px-4 py-3" style={{ color: "#424245" }}>{act.date}</td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
-                </div>
-            </div>
+                </>
+            )}
         </div>
     );
 }
