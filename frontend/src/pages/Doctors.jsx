@@ -116,7 +116,7 @@ function Doctors() {
     transition: "opacity 0.4s ease-in-out"
   };
 
-  if (loading) return <div style={{ padding: "40px", color: "#424245", fontSize: "13px" }}>Loading medical staff...</div>;
+  if (loading) return <div style={{ padding: "40px", color: "rgb(66, 66, 69)", fontSize: "13px" }}>Loading medical staff...</div>;
 
   return (
     <div style={{ ...mainContainerStyle, opacity: loading ? 0 : 1 }}>

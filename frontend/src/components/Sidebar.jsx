@@ -29,12 +29,12 @@ function Sidebar() {
 
     return (
         <aside className={`sidebar-macos ${isCollapsed ? 'collapsed' : ''}`}>
-            {/* macOS Traffic Lights*/}
+            {/* macOS Traffic Lights - Compact padding */}
             {!isCollapsed && (
-                <div style={{ display: 'flex', gap: '8px', padding: '16px 16px 8px' }}>
-                    <div style={{ width: '14px', height: '14px', borderRadius: '50%', backgroundColor: '#ff5f57', border: '0.5px solid rgba(0,0,0,0.1)' }}></div>
-                    <div style={{ width: '14px', height: '14px', borderRadius: '50%', backgroundColor: '#febc2e', border: '0.5px solid rgba(0,0,0,0.1)' }}></div>
-                    <div style={{ width: '14px', height: '14px', borderRadius: '50%', backgroundColor: '#28c840', border: '0.5px solid rgba(0,0,0,0.1)' }}></div>
+                <div style={{ display: 'flex', gap: '8px', padding: '14px 16px 10px' }}>
+                    <div style={{ width: '12px', height: '12px', borderRadius: '50%', backgroundColor: '#ff5f57', border: '0.5px solid rgba(0,0,0,0.1)' }}></div>
+                    <div style={{ width: '12px', height: '12px', borderRadius: '50%', backgroundColor: '#febc2e', border: '0.5px solid rgba(0,0,0,0.1)' }}></div>
+                    <div style={{ width: '12px', height: '12px', borderRadius: '50%', backgroundColor: '#28c840', border: '0.5px solid rgba(0,0,0,0.1)' }}></div>
                 </div>
             )}
 
@@ -42,16 +42,15 @@ function Sidebar() {
                 display: 'flex', 
                 justifyContent: isCollapsed ? 'center' : 'space-between', 
                 alignItems: 'center', 
-                padding: isCollapsed ? "15px 0" : "10px 16px",
-                marginTop: isCollapsed ? "10px" : "0"
+                padding: isCollapsed ? "15px 0" : "4px 16px",
+                marginTop: "2px"
             }}>
                 {!isCollapsed && (
                     <span style={{ 
-                        fontSize: '11.5px', 
+                        fontSize: '11px', 
                         fontWeight: '700', 
-                        color: 'rgba(29, 29, 31, 0.5)', 
-                        textTransform: 'none',
-                        letterSpacing: '0.3px'
+                        color: 'rgba(0, 0, 0, 0.4)', 
+                        letterSpacing: '0.02em'
                     }}>
                         Navigation
                     </span>
@@ -65,18 +64,18 @@ function Sidebar() {
                         width: '15px', 
                         height: '15px', 
                         transform: isCollapsed ? 'rotate(180deg)' : 'rotate(0deg)', 
-                        transition: 'transform 0.4s' 
+                        transition: 'transform 0.4s cubic-bezier(0.25, 1, 0.5, 1)' 
                     }} />
                 </button>
             </div>
 
-            <nav style={{ display: "flex", flexDirection: "column", gap: "2px", padding: "0 8px" }}>
+            <nav style={{ display: "flex", flexDirection: "column", gap: "0px", padding: "4px 8px" }}>
                 {menuItems.map((item) => (
                     <NavLink 
                         key={item.to}
                         to={item.to} 
                         className={({ isActive }) => isActive ? "nav-link active" : "nav-link"}
-                        style={{ height: '30px' }} // idebar row height
+                        style={{ height: '32px' }} // Tightened height
                     >
                         {({ isActive }) => (
                             <>
@@ -84,28 +83,21 @@ function Sidebar() {
                                     src={item.icon} 
                                     alt={item.label}
                                     style={{ 
-                                        width: "22px", //icon size
+                                        width: "22px", // Restored larger icon size
                                         height: "22px", 
                                         objectFit: "contain",
-                                        marginRight: isCollapsed ? "0" : "7px",
-                                        transition: "all 0.3s cubic-bezier(0.25, 1, 0.5, 1)",
+                                        marginRight: isCollapsed ? "0" : "8px",
                                         filter: isActive 
                                             ? "invert(31%) sepia(94%) saturate(4156%) hue-rotate(211deg) brightness(101%) contrast(105%)" 
-                                            : "invert(40%) sepia(0%) saturate(0%) brightness(50%) contrast(100%)"
+                                            : "invert(20%) brightness(0.4)"
                                     }} 
-                                    onMouseEnter={(e) => {
-                                        e.currentTarget.style.transform = "scale(1.1)";
-                                    }}
-                                    onMouseLeave={(e) => {
-                                        e.currentTarget.style.transform = "scale(1)";
-                                    }}
                                 />
                                 {!isCollapsed && (
                                     <span className="nav-label" style={{ 
-                                        fontSize: '13px', // text size
-                                        fontWeight: isActive ? '545' : '5',
-                                        color: isActive ? "var(--apple-text)" : "rgb(29, 29, 31)",
-                                        letterSpacing: '0.5px'
+                                        fontSize: '13px', 
+                                        fontWeight: isActive ? '550' : '450',
+                                        color: isActive ? "var(--apple-text)" : "rgba(0, 0, 0, 0.85)",
+                                        letterSpacing: '0.2px'
                                     }}>
                                         {item.label}
                                     </span>

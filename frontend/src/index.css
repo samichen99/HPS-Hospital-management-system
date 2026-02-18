@@ -19,8 +19,7 @@ body {
     color: var(--apple-text);
     font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", sans-serif;
     margin: 0;
-    /* EDIT: Fixed from 3rem to 15px to prevent container jumping */
-    font-size: 15px;
+    font-size: 15px; 
     -webkit-font-smoothing: antialiased;
     line-height: 1.5;
 }
@@ -46,7 +45,7 @@ body {
     z-index: 100;
 }
 
-/* Neutralize sidebar padding when collapsed to allow true centering */
+/* Neutralize sidebar padding when collapsed*/
 .sidebar-macos.collapsed {
     width: 60px;
     padding: 12px 4px; 
@@ -63,8 +62,7 @@ body {
     margin-bottom: 2px;
     position: relative;
     white-space: nowrap;
-    /* EDIT: Fixed from 320px to 40px to prevent layout displacement */
-    height: 40px; 
+    height: 34px;
     transition: background-color 0.6s ease, padding 0.6s cubic-bezier(0.45, 2, 1, 2);
 }
 
@@ -118,7 +116,6 @@ body {
 }
 
 .btn-macos-primary:focus {
-    /* Blue focus ring animation */
     box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.4);
     border-color: #007aff;
 }
@@ -130,7 +127,6 @@ body {
 }
 
 .btn-macos-secondary:focus {
-    /* Grey focus ring animation */
     box-shadow: 0 0 0 3px rgba(150, 150, 150, 0.4);
     border-color: #8e8e93;
 }
@@ -179,7 +175,7 @@ main {
   align-items: start;
 }
 
-/* EDIT: Added direct child selection to ensure entering/exiting pages stack */
+/* FIXES THE POP: Ensures pages stack during transition */
 main > div {
   grid-area: 1 / 1 / 2 / 2;
   width: 100%;
