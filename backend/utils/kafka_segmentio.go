@@ -4,16 +4,27 @@ import (
 	"context"
 	"encoding/json"
 	"log"
+	"os"
 	"time"
 
 	kafka "github.com/segmentio/kafka-go"
 )
 
 var (
-	brokers = []string{"localhost:9092"} // docker kafka as localhost
+	brokers = []string{getKafkaBroker()} // docker kafka as localhost
 	
 	kafkaWriters = map[string]*kafka.Writer{}
 )
+
+func getKafkaBroker() string{
+
+	addr:= os.Getenv("KAFKA_BROKER")
+	if addr == ""{
+		return "localhost:9092"
+	}
+	return addr
+
+}
 
 // InitKafkaWriters initializes kafka writers
 

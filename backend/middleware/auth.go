@@ -14,7 +14,7 @@ const UserClaimsKey contextKey = "userClaims"
 
 func AuthMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(
-		func (w http.ResponseWriter, r *http.Request) {
+		func(w http.ResponseWriter, r *http.Request) {
 		auth := r.Header.Get("Authorization")
 		if auth == "" || !strings.HasPrefix(auth, "Bearer ") {
 			http.Error(w, "missing bearer token", http.StatusUnauthorized)

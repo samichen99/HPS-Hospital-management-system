@@ -8,6 +8,7 @@ import (
 	"os/signal"
 	"time"
 
+	"github.com/joho/godotenv"
 	"github.com/rs/cors"
 	"github.com/samichen99/HAP-hospital-management-system/api"
 	"github.com/samichen99/HAP-hospital-management-system/config"
@@ -15,6 +16,9 @@ import (
 )
 
 func main() {
+
+	_ = godotenv.Load()
+
 	// init kafka writers
 	topics := []string{
 		"appointments.created",
@@ -25,7 +29,7 @@ func main() {
 
 	// Init both DBs
 	config.InitDB()
-	//db := config.GormDB
+	//*db := config.GormDB
 
 	// Run GORM migrations
 	/*err := db.AutoMigrate(
@@ -47,16 +51,16 @@ func main() {
 	router := api.NewRouter()
 
 	c := cors.New(cors.Options{
-    AllowedOrigins:   []string{"http://localhost:5173"},
-    AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
-    AllowedHeaders:   []string{"Authorization", "Content-Type"},
-    AllowCredentials: true,
-})
+		AllowedOrigins:   []string{"http://localhost:5173"},
+		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
+		AllowedHeaders:   []string{"Authorization", "Content-Type"},
+		AllowCredentials: true,
+	})
 
-srv := &http.Server{
-    Addr:    ":8080",
-    Handler: c.Handler(router),
-}
+	srv := &http.Server{
+		Addr:    ":8080",
+		Handler: c.Handler(router),
+	}
 
 	// Start Kafka consumers
 	utils.StartAppointmentConsumers(topics, "appointment-consumer-group")

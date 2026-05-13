@@ -5,7 +5,7 @@ import { jwtDecode } from "jwt-decode";
 export const AuthContext = createContext();
 
 export function AuthProvider({ children }) {
-  // Fix: Initialize user and token together to prevent navigation "blinks"
+  
   const [token, setToken] = useState(() => localStorage.getItem("token") || null);
   
   const [user, setUser] = useState(() => {

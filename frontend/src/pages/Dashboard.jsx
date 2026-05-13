@@ -29,7 +29,7 @@ function StatCard({ stat }) {
     };
 
     return (
-        <div 
+        <div id="reactive cards"
             style={dynamicStyle}
             onMouseMove={handleMouseMove}
             onMouseEnter={() => setIsHovered(true)}
@@ -69,7 +69,7 @@ function Dashboard() {
         fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Display", sans-serif',
         backdropFilter: "blur(4px) saturate(150%)",
         WebkitBackdropFilter: "blur(4px) saturate(150%)",
-        border: "1px solid rgba(0, 0, 0, 0.1)",
+        border: "1px solid rgba(122, 122, 122, 0.1)",
         boxShadow: "0 8px 32px rgba(0, 0, 0, 0.06)",
         transition: "opacity 0.4s ease-in-out"
     };

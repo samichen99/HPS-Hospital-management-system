@@ -2,7 +2,9 @@ package config
 
 import (
 	"database/sql"
-	
+	"fmt"
+	"os"
+
 	"log"
 
 	_ "github.com/lib/pq"
@@ -11,14 +13,43 @@ import (
 )
 
 var (
-	DB      *sql.DB   
-	GormDB  *gorm.DB  
+	DB     *sql.DB
+	GormDB *gorm.DB
 )
 
 func InitDB() {
-	dsn := "host=localhost user=postgres password=admin dbname=hospital_db port=5432 sslmode=disable"
+	host := os.Getenv("DB_HOST")
+	if host == "" {
+		host = "localhost"
+	}
+
+	user := os.Getenv("DB_USER")
+	if user == "" {
+		user = "postgres"
+	}
+
+	password := os.Getenv("DB_PASSWORD")
+	if password == "" {
+		password = "admin"
+	}
+
+	dbname := os.Getenv("DB_NAME")
+	if dbname == "" {
+		dbname = "hospital_db"
+	}
+
+	port := os.Getenv("DB_PORT")
+	if port == "" {
+		port = "5432"
+	}
+
+	dsn := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%s sslmode=disable", host, user, password, dbname, port)
+
+	maskedDsn := fmt.Sprintf("host=%s user=%s password=*** dbname=%s port=%s sslmode=disable", host, user, dbname, port)
+	log.Printf("Database connection string: %s", maskedDsn)
 
 	var err error
+
 	DB, err = sql.Open("postgres", dsn)
 	if err != nil {
 		log.Fatalf("Failed to connect to raw DB: %v", err)
@@ -32,7 +63,14 @@ func InitDB() {
 	if err != nil {
 		log.Fatalf("Failed to connect to GORM DB: %v", err)
 	}
-	log.Println("Connected to PostgreSQL using GORM")
+
+	// to erify which database we're actually connected to
+	var currentDb string
+	if err := GormDB.Raw("SELECT current_database()").Scan(&currentDb).Error; err == nil {
+		log.Printf("Connected to PostgreSQL using GORM - Database: %s", currentDb)
+	} else {
+		log.Println("Connected to PostgreSQL using GORM")
+	}
 }
 
 func CloseDb() {

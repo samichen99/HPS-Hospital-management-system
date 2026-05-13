@@ -12,7 +12,6 @@ function Doctors() {
   const [showForm, setShowForm] = useState(false);
 
   const [form, setForm] = useState({
-    user_id: "",
     full_name: "",
     speciality: "",
     phone: "",
@@ -69,7 +68,7 @@ function Doctors() {
   };
 
   const resetForm = () => {
-    setForm({ user_id: "", full_name: "", speciality: "", phone: "", status: true });
+    setForm({full_name: "", speciality: "", phone: "", status: true });
     setEditingId(null);
   };
 
@@ -166,10 +165,6 @@ function Doctors() {
           </div>
           
           <form onSubmit={handleSubmit} className="row g-3">
-              <div className="col-md-2">
-                <label style={{ fontSize: "11px", fontWeight: "600", color: "#424245", textTransform: "uppercase", marginBottom: "6px", display: "block" }}>User ID</label>
-                <input type="number" className="form-control" value={form.user_id} onChange={(e) => setForm({ ...form, user_id: Number(e.target.value) })} required />
-              </div>
               <div className="col-md-4">
                 <label style={{ fontSize: "11px", fontWeight: "600", color: "#424245", textTransform: "uppercase", marginBottom: "6px", display: "block" }}>Full Name</label>
                 <input type="text" className="form-control" value={form.full_name} onChange={(e) => setForm({ ...form, full_name: e.target.value })} required />
@@ -182,7 +177,7 @@ function Doctors() {
                 <label style={{ fontSize: "11px", fontWeight: "600", color: "#424245", textTransform: "uppercase", marginBottom: "6px", display: "block" }}>Phone</label>
                 <input type="text" className="form-control" value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} required />
               </div>
-              <div className="col-md-3">
+              <div className="col-md-2">
                 <label style={{ fontSize: "11px", fontWeight: "600", color: "#424245", textTransform: "uppercase", marginBottom: "6px", display: "block" }}>Status</label>
                 <select className="form-select" value={form.status} onChange={(e) => setForm({ ...form, status: e.target.value === "true" })}>
                   <option value="true">Active</option>
