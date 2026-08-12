@@ -1,23 +1,28 @@
 services:
-  db: 
+  db:
     image: postgres:15-alpine
-    environment: 
+    environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: admin
       POSTGRES_DB: hospital_db
     ports:
-      - "5432:5432"
+      - "5433:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres -d hospital_db"]
       interval: 5s
       timeout: 5s
       retries: 5
 
+
   zookeeper:
     image: confluentinc/cp-zookeeper:7.4.0
     environment:
       ZOOKEEPER_CLIENT_PORT: 2181
       ZOOKEEPER_TICK_TIME: 2000
+    ports:
+      - "2181:2181"
 
   kafka:
     image: confluentinc/cp-kafka:7.4.0
@@ -25,29 +30,32 @@ services:
       - zookeeper
     ports:
       - "9092:9092"
+      - "29092:29092"
     environment:
       KAFKA_BROKER_ID: 1
       KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
-      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092,LISTENER_LOCAL://localhost:29092
-      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,LISTENER_LOCAL:PLAINTEXT
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092,PLAINTEXT_HOST://localhost:29092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
       KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
 
   backend:
     build: ./backend
     depends_on:
+      db:
+        condition: service_healthy
       kafka:
         condition: service_started
     environment:
-      - DB_HOST=host.docker.internal  # Connect to local machine's PostgreSQL
+      - DB_HOST=db  
       - DB_USER=postgres              # Local postgres user
       - DB_PASSWORD=admin             # Local postgres password
       - DB_NAME=hospital_db           # Your existing database
       - DB_PORT=5432                  # Local postgres port
       - KAFKA_BROKER=kafka:9092       # Docker service with port
-    
     ports:
       - "8080:8080"
+
   frontend:
     build: ./frontend
     depends_on:
@@ -57,3 +65,6 @@ services:
     volumes:
       - ./frontend:/app
       - /app/node_modules
+
+volumes:
+  postgres_data:

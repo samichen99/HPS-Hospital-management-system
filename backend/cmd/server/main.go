@@ -12,6 +12,7 @@ import (
 	"github.com/rs/cors"
 	"github.com/samichen99/HAP-hospital-management-system/api"
 	"github.com/samichen99/HAP-hospital-management-system/config"
+	"github.com/samichen99/HAP-hospital-management-system/models"
 	"github.com/samichen99/HAP-hospital-management-system/utils"
 )
 
@@ -32,7 +33,7 @@ func main() {
 	//*db := config.GormDB
 
 	// Run GORM migrations
-	/*err := db.AutoMigrate(
+	err := config.GormDB.AutoMigrate(
 		&models.User{},
 		&models.Patient{},
 		&models.Doctor{},
@@ -44,7 +45,7 @@ func main() {
 	)
 	if err != nil {
 		log.Fatalf("Auto migration failed: %v", err)
-	}*/
+	}
 	log.Println("Database connected (SQL + GORM) and migrations applied successfully.")
 
 	// Init Router

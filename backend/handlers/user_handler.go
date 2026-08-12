@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	"strconv"
+	"strings"
 
 	"github.com/gorilla/mux"
 	"github.com/samichen99/HAP-hospital-management-system/models"
@@ -21,15 +22,46 @@ func isValidRole(role string) bool {
 	}
 }
 
+func requiresAuthForUserCreation(r *http.Request, existingUserCount int) bool {
+	if existingUserCount == 0 {
+		return false
+	}
+
+	auth := r.Header.Get("Authorization")
+	if auth == "" || !strings.HasPrefix(auth, "Bearer ") {
+		return true
+	}
+
+	token := strings.TrimPrefix(auth, "Bearer ")
+	_, err := utils.ParseJWT(token)
+	return err != nil
+}
+
 // CreateUser handler :
 
 func CreateUserHandler(w http.ResponseWriter, r *http.Request) {
+	users, err := repositories.GetAllUsers()
+	if err != nil {
+		http.Error(w, "Error checking existing users", http.StatusInternalServerError)
+		return
+	}
+
+	if requiresAuthForUserCreation(r, len(users)) {
+		http.Error(w, "missing bearer token", http.StatusUnauthorized)
+		return
+	}
+
 	var user models.User
 
 	// Decode JSON
-	err := json.NewDecoder(r.Body).Decode(&user)
+	err = json.NewDecoder(r.Body).Decode(&user)
 	if err != nil {
 		http.Error(w, "Invalid request body", http.StatusBadRequest)
+		return
+	}
+
+	if !isValidRole(user.Role) {
+		http.Error(w, "unauthorized role", http.StatusBadRequest)
 		return
 	}
 
@@ -44,11 +76,6 @@ func CreateUserHandler(w http.ResponseWriter, r *http.Request) {
 	err = repositories.CreateUser(user)
 	if err != nil {
 		http.Error(w, "Could not create user", http.StatusInternalServerError)
-		return
-	}
-
-	if !isValidRole(user.Role) {
-		http.Error(w, "unauthorized role", http.StatusBadRequest)
 		return
 	}
 

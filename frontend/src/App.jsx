@@ -12,7 +12,7 @@ import MainLayout from "./layouts/MainLayout";
 import Medical_records from "./pages/Medical_records";
 import Files from "./pages/Files";
 import Invoices from "./pages/Invoices";
-import Payments from "./pages/Payments";
+import Payments from "./pages/payments";
 
 export default function App() {
   return (
